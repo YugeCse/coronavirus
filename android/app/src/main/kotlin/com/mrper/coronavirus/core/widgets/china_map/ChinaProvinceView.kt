@@ -2,13 +2,12 @@ package com.mrper.coronavirus.core.widgets.china_map
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
+import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import com.mrper.coronavirus.R
+import com.mrper.coronavirus.utils.view.DensityUtil
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor
@@ -41,14 +40,17 @@ class ChinaProvinceView : View, View.OnTouchListener {
     var selectedProvinceInfo: ChinaProvinceInfo?
         get() = _selectedProvinceInfo
         set(value) {
-            if (value != null && _selectedProvinceInfo != value)
-                onProvinceSelectedChanged?.invoke(value)
+            if (value != null && _selectedProvinceInfo != value) {
+                onProvinceSelectedChanged?.invoke(value,
+                        PointF(DensityUtil.px2dip(context, value.rect.centerX() * _mapScale),
+                                DensityUtil.px2dip(context, value.rect.centerY() * _mapScale)))
+            }
             _selectedProvinceInfo = value
             invalidate()
         }
 
     /** 省份选择事件 **/
-    var onProvinceSelectedChanged: ((ChinaProvinceInfo?) -> Unit)? = null
+    var onProvinceSelectedChanged: ((ChinaProvinceInfo?, PointF?) -> Unit)? = null
 
     constructor(context: Context?) : super(context) {
         init(context)
@@ -74,11 +76,15 @@ class ChinaProvinceView : View, View.OnTouchListener {
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         if (event?.action == MotionEvent.ACTION_DOWN) {
-            val selectedProvinceInfo = _data?.provinceInfoList?.firstOrNull { it.isTouched(event.x / _mapScale, event.y / _mapScale) }
+            val tx = event.x / _mapScale
+            val ty = event.y / _mapScale
+            val selectedProvinceInfo = _data?.provinceInfoList?.firstOrNull { it.isTouched(tx, ty) }
             _selectedProvinceInfo?.backgroundColor = Color.TRANSPARENT
             _selectedProvinceInfo = if (selectedProvinceInfo == _selectedProvinceInfo) null else selectedProvinceInfo
             _selectedProvinceInfo?.backgroundColor = _selectedBgColor
-            onProvinceSelectedChanged?.invoke(_selectedProvinceInfo)
+            onProvinceSelectedChanged?.invoke(_selectedProvinceInfo,
+                    if (selectedProvinceInfo == null) null else PointF(DensityUtil.px2dip(context, selectedProvinceInfo.rect.centerX() * _mapScale),
+                            DensityUtil.px2dip(context, selectedProvinceInfo.rect.centerY() * _mapScale)))
             invalidate()
             return true
         }

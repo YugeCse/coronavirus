@@ -15,6 +15,7 @@ class ChinaProvinceView extends StatefulWidget {
 
   /// 地图宽度
   final double width;
+
   /// 视图创建完成的事件
   final Function onViewCreated;
 
@@ -36,28 +37,33 @@ class _ChinaProvinceViewState extends State<ChinaProvinceView> {
           onPlatformViewCreated: widget.onViewCreated));
 }
 
+typedef void OnProvinceSelectedChanged(String provinceName, double x, double y);
+
 class ChinaProvinceViewController {
   MethodChannel _methodChannel;
-  EventChannel _eventChannel;
+  OnProvinceSelectedChanged onProvinceSelectedChanged;
 
   ChinaProvinceViewController(int viewId) {
-    _methodChannel = MethodChannel('$_ChinaProvinceView_TAG-$viewId');
-    _eventChannel = EventChannel('$_ChinaProvinceView_TAG-$viewId-event');
+    _methodChannel = MethodChannel('$_ChinaProvinceView_TAG-$viewId')
+      ..setMethodCallHandler((call) async {
+        if (call.method == 'onProvinceSelectedChanged') {
+          var arguments = call.arguments as Map<dynamic, dynamic>;
+          if (onProvinceSelectedChanged != null)
+            onProvinceSelectedChanged(
+                arguments['name'], arguments['tx'], arguments['ty']);
+        }
+      });
   }
 
   /// 设置选中的背景色
   set selectedBackgroundColor(int value) => _methodChannel.invokeMethod(
       'setSelectedBackgroundColor', {'value': value ?? Colors.red.value});
 
-  
-
+  /// 释放对象资源
   void dispose() {
     if (_methodChannel != null) {
       _methodChannel.setMethodCallHandler(null);
       _methodChannel = null;
-    }
-    if (_eventChannel != null) {
-      _eventChannel = null;
     }
   }
 }

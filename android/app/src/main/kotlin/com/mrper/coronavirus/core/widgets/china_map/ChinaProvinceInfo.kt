@@ -28,7 +28,7 @@ class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
     private var _textSize: Float = 9f
 
     /** 图形所在的Region **/
-    private var region: Region = buildRegion(path)
+    private var _region: Region = buildRegion(path)
 
     /** 设置或获取边框宽度 **/
     var borderWidth: Float
@@ -65,6 +65,10 @@ class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
             _textSize = value
         }
 
+    /** 绘制的矩形区域 **/
+    val rect: Rect
+        get() = _region.bounds
+
     private fun buildRegion(path: Path): Region {
         val pathBoundsRect = RectF()
         path.computeBounds(pathBoundsRect, false)
@@ -77,7 +81,7 @@ class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
     }
 
     /** 是否被点击 **/
-    fun isTouched(x: Float, y: Float) = region.contains(x.toInt(), y.toInt())
+    fun isTouched(x: Float, y: Float) = _region.contains(x.toInt(), y.toInt())
 
     /**
      * 绘制省份路径
@@ -125,8 +129,8 @@ class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
     private fun getNameDrawOffset(provinceName: String, paint: Paint): PointF {
         val textBounds = Rect()
         paint.getTextBounds(provinceName, 0, provinceName.length, textBounds)
-        val regionWidth = region.bounds.width()
-        val regionHeight = region.bounds.height()
+        val regionWidth = _region.bounds.width()
+        val regionHeight = _region.bounds.height()
         val textWidth = textBounds.width()
         val textHeight = textBounds.height()
         var offsetX: Float = (regionWidth - textWidth) / 2f
@@ -161,7 +165,7 @@ class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
             }
             "澳门" -> offsetY = regionWidth * 1.0f + textHeight
         }
-        return PointF(region.bounds.left + offsetX, region.bounds.top + offsetY)
+        return PointF(_region.bounds.left + offsetX, _region.bounds.top + offsetY)
     }
 
 }

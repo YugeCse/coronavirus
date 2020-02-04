@@ -36,23 +36,27 @@ class ChinaProvinceViewFlutterViewFactory(private val messenger: BinaryMessenger
 }
 
 class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, private val ctx: Context?, viewId: Int, params: Map<String, Any?>?)
-    : PlatformView, MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
+    : PlatformView, MethodChannel.MethodCallHandler {
 
     private var chinaProvinceView: ChinaProvinceView? = null
     private var methodChannel: MethodChannel? = null
-    private var eventChannel: EventChannel? = null
 
     init {
         methodChannel = MethodChannel(messenger, "$ChinaProvinceViewFlutterViewTag-$viewId").apply {
             setMethodCallHandler(this@ChinaProvinceViewFlutterView)
         }
-        eventChannel = EventChannel(messenger, "$ChinaProvinceViewFlutterViewTag-$viewId-event").apply {
-            setStreamHandler(this@ChinaProvinceViewFlutterView)
-        }
     }
 
     override fun getView(): View {
-        if (chinaProvinceView == null) chinaProvinceView = ChinaProvinceView(ctx)
+        if (chinaProvinceView == null) chinaProvinceView = ChinaProvinceView(ctx).apply {
+            onProvinceSelectedChanged = { provinceInfo, point ->
+                methodChannel?.invokeMethod("onProvinceSelectedChanged", mapOf(
+                        "name" to provinceInfo?.provinceLayerPathInfo?.name,
+                        "tx" to point?.x,
+                        "ty" to point?.y
+                ))
+            }
+        }
         return chinaProvinceView!!
     }
 
@@ -66,23 +70,10 @@ class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, private val ctx: 
         }
     }
 
-    override fun onListen(p0: Any?, eventSink: EventChannel.EventSink?) {
-        chinaProvinceView?.onProvinceSelectedChanged = { provinceInfo ->
-            eventSink?.success(provinceInfo?.provinceLayerPathInfo?.name)
-        }
-    }
-
-    override fun onCancel(p0: Any?) {
-    }
-
     override fun dispose() {
         if (methodChannel != null) {
             methodChannel?.setMethodCallHandler(null)
             methodChannel = null
-        }
-        if (eventChannel != null) {
-            eventChannel?.setStreamHandler(null)
-            eventChannel = null
         }
         if (chinaProvinceView != null) {
             chinaProvinceView?.onProvinceSelectedChanged = null
