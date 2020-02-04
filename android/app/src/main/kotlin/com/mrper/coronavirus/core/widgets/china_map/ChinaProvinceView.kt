@@ -17,21 +17,38 @@ import java.util.concurrent.TimeUnit
 /** 中国省份视图 **/
 class ChinaProvinceView : View, View.OnTouchListener {
 
-    private var data: ChinaMapInfo? = null
+    /** 地图数据 **/
+    private var _data: ChinaMapInfo? = null
 
-    private var mapScale: Float = 1.0f
+    /** 地图的缩放倍率 **/
+    private var _mapScale: Float = 1.0f
 
+    /** 当前选中的省份 **/
     private var _selectedProvinceInfo: ChinaProvinceInfo? = null
 
-    /** 当前选择的省份 **/
+    /** 选中区域的背景色 **/
+    private var _selectedBgColor: Int = Color.RED
+
+    /** 设置或获取选中区域的背景色 **/
+    var selectedBackgroundColor: Int
+        get() = _selectedBgColor
+        set(value) {
+            _selectedBgColor = value
+            invalidate()
+        }
+
+    /** 设置或获取当前选择的省份 **/
     var selectedProvinceInfo: ChinaProvinceInfo?
         get() = _selectedProvinceInfo
         set(value) {
+            if (value != null && _selectedProvinceInfo != value)
+                onProvinceSelectedChanged?.invoke(value)
             _selectedProvinceInfo = value
+            invalidate()
         }
 
     /** 省份选择事件 **/
-    var onProvinceSelectedChanged: ((ChinaProvinceInfo) -> Unit)? = null
+    var onProvinceSelectedChanged: ((ChinaProvinceInfo?) -> Unit)? = null
 
     constructor(context: Context?) : super(context) {
         init(context)
@@ -52,19 +69,17 @@ class ChinaProvinceView : View, View.OnTouchListener {
 
     private fun init(context: Context?) {
         setOnTouchListener(this)
-        data = context?.getChinaMapInfoByMapRawId(R.raw.ic_map_china)
+        _data = context?.getChinaMapInfoByMapRawId(R.raw.ic_map_china)
     }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         if (event?.action == MotionEvent.ACTION_DOWN) {
-            val selectedProvinceInfo = data?.provinceInfoList?.firstOrNull { it.isTouched(event.x / mapScale, event.y / mapScale) }
-            if (selectedProvinceInfo != null && selectedProvinceInfo != _selectedProvinceInfo) {
-                _selectedProvinceInfo?.backgroundColor = Color.TRANSPARENT
-                _selectedProvinceInfo = selectedProvinceInfo
-                _selectedProvinceInfo?.backgroundColor = Color.RED
-                onProvinceSelectedChanged?.invoke(selectedProvinceInfo)
-                invalidate()
-            }
+            val selectedProvinceInfo = _data?.provinceInfoList?.firstOrNull { it.isTouched(event.x / _mapScale, event.y / _mapScale) }
+            _selectedProvinceInfo?.backgroundColor = Color.TRANSPARENT
+            _selectedProvinceInfo = if (selectedProvinceInfo == _selectedProvinceInfo) null else selectedProvinceInfo
+            _selectedProvinceInfo?.backgroundColor = _selectedBgColor
+            onProvinceSelectedChanged?.invoke(_selectedProvinceInfo)
+            invalidate()
             return true
         }
         return false
@@ -74,9 +89,9 @@ class ChinaProvinceView : View, View.OnTouchListener {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val width = MeasureSpec.getSize(widthMeasureSpec)
         var height = MeasureSpec.getSize(heightMeasureSpec)
-        if (data != null) {
-            mapScale = (width.toFloat() / data!!.viewPortWidth)
-            height = (data!!.viewPortHeight * mapScale).toInt()
+        _data?.let {
+            _mapScale = (width.toFloat() / _data!!.viewPortWidth)
+            height = (_data!!.viewPortHeight * _mapScale).toInt()
         }
         setMeasuredDimension(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY))
@@ -85,12 +100,12 @@ class ChinaProvinceView : View, View.OnTouchListener {
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        canvas?.scale(mapScale, mapScale)
-        data?.provinceInfoList?.forEach { provinceInfo ->
+        canvas?.scale(_mapScale, _mapScale)
+        _data?.provinceInfoList?.forEach { provinceInfo ->
             provinceInfo.drawPath(canvas, true)
             provinceInfo.drawPath(canvas, false)
         }
-        data?.provinceInfoList?.forEach { provinceInfo ->
+        _data?.provinceInfoList?.forEach { provinceInfo ->
             provinceInfo.drawName(context, canvas)
         }
     }

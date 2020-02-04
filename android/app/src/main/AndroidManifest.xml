@@ -8,13 +8,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="coronavirus"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".TestActivity" android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".TestActivity" android:theme="@style/Theme.AppCompat.Light.DarkActionBar"/>
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

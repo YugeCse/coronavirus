@@ -7,7 +7,7 @@ import android.graphics.*
  * 中国省份信息
  * @param provinceLayerPathInfo 省份图层信息
  */
-class ChinaProvinceInfo(private val provinceLayerPathInfo: ProvinceLayerPathInfo) {
+class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
 
     /** 图形路径 **/
     private var path: Path = provinceLayerPathInfo.drawPathInfo
