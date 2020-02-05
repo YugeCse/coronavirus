@@ -21,6 +21,9 @@ class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
     /** 背景色 **/
     private var _bgColor: Int = provinceLayerPathInfo.backgroundColor
 
+    /** 选中的背景色 **/
+    private var _selectedBgColor: Int = Color.RED
+
     /** 文本颜色 **/
     private var _textColor: Int = Color.BLACK
 
@@ -29,6 +32,9 @@ class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
 
     /** 图形所在的Region **/
     private var _region: Region = buildRegion(path)
+
+    /** 是否被选中 **/
+    private var _isSelected: Boolean = false
 
     /** 设置或获取边框宽度 **/
     var borderWidth: Float
@@ -51,6 +57,13 @@ class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
             _bgColor = value
         }
 
+    /** 设置或获取被选中的背景颜色 **/
+    var selectedBackgroundColor: Int
+        get() = _selectedBgColor
+        set(value) {
+            _selectedBgColor = value
+        }
+
     /** 文本颜色 **/
     var textColor: Int
         get() = _textColor
@@ -63,6 +76,13 @@ class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
         get() = _textSize
         set(value) {
             _textSize = value
+        }
+
+    /** 是否被选择 **/
+    var isSelected: Boolean
+        get() = _isSelected
+        set(value) {
+            _isSelected = value
         }
 
     /** 绘制的矩形区域 **/
@@ -94,7 +114,7 @@ class ChinaProvinceInfo(val provinceLayerPathInfo: ProvinceLayerPathInfo) {
             isAntiAlias = true
             if (isFill) {
                 style = Paint.Style.FILL
-                color = pathColor ?: _bgColor
+                color = if (_isSelected) _selectedBgColor else (pathColor ?: _bgColor)
             } else {
                 style = Paint.Style.STROKE
                 color = pathColor ?: _borderColor

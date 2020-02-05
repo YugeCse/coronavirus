@@ -22,9 +22,6 @@ class ChinaProvinceView : View, View.OnTouchListener {
     /** 地图的缩放倍率 **/
     private var _mapScale: Float = 1.0f
 
-    /** 当前选中的省份 **/
-    private var _selectedProvinceInfo: ChinaProvinceInfo? = null
-
     /** 选中区域的背景色 **/
     private var _selectedBgColor: Int = Color.RED
 
@@ -33,19 +30,22 @@ class ChinaProvinceView : View, View.OnTouchListener {
         get() = _selectedBgColor
         set(value) {
             _selectedBgColor = value
+            _data?.provinceInfoList?.forEach { it.selectedBackgroundColor = _selectedBgColor }
             invalidate()
         }
 
     /** 设置或获取当前选择的省份 **/
     var selectedProvinceInfo: ChinaProvinceInfo?
-        get() = _selectedProvinceInfo
+        get() = _data?.provinceInfoList?.firstOrNull { it.isSelected }
         set(value) {
-            if (value != null && _selectedProvinceInfo != value) {
+            _data?.provinceInfoList?.forEach {
+                it.isSelected = it.provinceLayerPathInfo.name == value?.provinceLayerPathInfo?.name
+            }
+            value?.let {
                 onProvinceSelectedChanged?.invoke(value,
                         PointF(DensityUtil.px2dip(context, value.rect.centerX() * _mapScale),
                                 DensityUtil.px2dip(context, value.rect.centerY() * _mapScale)))
             }
-            _selectedProvinceInfo = value
             invalidate()
         }
 
@@ -74,15 +74,31 @@ class ChinaProvinceView : View, View.OnTouchListener {
         _data = context?.getChinaMapInfoByMapRawId(R.raw.ic_map_china)
     }
 
+    /** 设置省份的背景颜色 **/
+    fun setProvinceBackgroundColor(provinceName: String, color: Int) {
+        _data?.provinceInfoList?.firstOrNull { it.provinceLayerPathInfo.name.contains(provinceName) }?.backgroundColor = color
+        invalidate()
+    }
+
+    /**
+     * 设置多个省份的背景颜色
+     * @param params 参数对应关系 省份名：backgroundColor(int)
+     */
+    fun setProvincesBackgroundColors(params: Map<String, Any>) {
+        _data?.provinceInfoList?.forEach {
+            if (params.containsKey(it.provinceLayerPathInfo.name))
+                it.backgroundColor = params[it.provinceLayerPathInfo.name].toString().toLong().toInt()
+        }
+        invalidate()
+    }
+
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
         if (event?.action == MotionEvent.ACTION_DOWN) {
             val tx = event.x / _mapScale
             val ty = event.y / _mapScale
             val selectedProvinceInfo = _data?.provinceInfoList?.firstOrNull { it.isTouched(tx, ty) }
-            _selectedProvinceInfo?.backgroundColor = Color.TRANSPARENT
-            _selectedProvinceInfo = if (selectedProvinceInfo == _selectedProvinceInfo) null else selectedProvinceInfo
-            _selectedProvinceInfo?.backgroundColor = _selectedBgColor
-            onProvinceSelectedChanged?.invoke(_selectedProvinceInfo,
+            _data?.provinceInfoList?.forEach { it.isSelected = it.provinceLayerPathInfo.name == selectedProvinceInfo?.provinceLayerPathInfo?.name }
+            onProvinceSelectedChanged?.invoke(selectedProvinceInfo,
                     if (selectedProvinceInfo == null) null else PointF(DensityUtil.px2dip(context, selectedProvinceInfo.rect.centerX() * _mapScale),
                             DensityUtil.px2dip(context, selectedProvinceInfo.rect.centerY() * _mapScale)))
             invalidate()

@@ -67,6 +67,13 @@ class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, private val ctx: 
                         ?: Color.RED
                 result.success(null)
             }
+            "setProvincesBackgroundColors" -> {
+                val params = method.argument<Map<String, Any>>("params")
+                params?.let {
+                    chinaProvinceView?.setProvincesBackgroundColors(params)
+                }
+                result.success(null)
+            }
         }
     }
 
