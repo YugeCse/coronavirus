@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 
 /// 行政区域的疫情情况视图
 class CountryMapInfoView extends StatefulWidget {
-  CountryMapInfoView({Key key, @required this.situationInfo})
+  CountryMapInfoView(
+      {Key key, @required this.locProvinceName, @required this.situationInfo})
       : super(key: key);
-
+  final String locProvinceName;
   final CornonavirusSituationInfo situationInfo;
 
   @override
@@ -24,6 +25,7 @@ class _CountryMapInfoViewState extends State<CountryMapInfoView> {
 
   ChinaProvinceViewController _chinaProvinceViewController;
   double _touchX = 0.0, _touchY = 0.0;
+  bool _isShownLocInfoView = false;
   AreaSituationInfo _selectedAreaSituationInfo;
 
   int _getAreaColorByConfirmedCount(int count) {
@@ -56,8 +58,9 @@ class _CountryMapInfoViewState extends State<CountryMapInfoView> {
     widget.situationInfo.areaSituationInfoList.forEach((e) =>
         areaColorInfoParams[e.provinceShortName] =
             _getAreaColorByConfirmedCount(e.confirmed));
-    _chinaProvinceViewController.provincesBackgroundColors =
-        areaColorInfoParams;
+    _chinaProvinceViewController
+      ..provincesBackgroundColors = areaColorInfoParams
+      ..selectedProvinceByName = widget.locProvinceName;
   }
 
   @override

@@ -74,6 +74,17 @@ class ChinaProvinceView : View, View.OnTouchListener {
         _data = context?.getChinaMapInfoByMapRawId(R.raw.ic_map_china)
     }
 
+    /** 根据省份名称设置被选中的城市的名称 **/
+    fun setSelectedProvinceByName(provinceName: String) {
+        _data?.provinceInfoList?.forEach { it.isSelected = provinceName.contains(it.provinceLayerPathInfo.name) }
+        selectedProvinceInfo?.let { value ->
+            onProvinceSelectedChanged?.invoke(value,
+                    PointF(DensityUtil.px2dip(context, value.rect.centerX() * _mapScale),
+                            DensityUtil.px2dip(context, value.rect.centerY() * _mapScale)))
+        }
+        invalidate()
+    }
+
     /** 设置省份的背景颜色 **/
     fun setProvinceBackgroundColor(provinceName: String, color: Int) {
         _data?.provinceInfoList?.firstOrNull { it.provinceLayerPathInfo.name.contains(provinceName) }?.backgroundColor = color

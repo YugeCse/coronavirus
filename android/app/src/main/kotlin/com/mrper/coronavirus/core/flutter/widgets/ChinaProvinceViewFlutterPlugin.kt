@@ -63,6 +63,12 @@ class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, private val ctx: 
 
     override fun onMethodCall(method: MethodCall, result: MethodChannel.Result) {
         when (method.method) {
+            "setSelectedProvinceByName" -> {
+                val provinceName = method.argument<String>("provinceName")
+                if (!provinceName.isNullOrEmpty())
+                    chinaProvinceView?.setSelectedProvinceByName(provinceName)
+                result.success(null)
+            }
             "setSelectedBackgroundColor" -> { //设置选中后的区域背景色
                 chinaProvinceView?.selectedBackgroundColor = method.argument<Long>("value")?.toInt()
                         ?: Color.RED

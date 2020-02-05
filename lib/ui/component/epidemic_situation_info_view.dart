@@ -1,5 +1,3 @@
-
-import 'package:coronavirus/core/plugins/location_plugin.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/area_situation_info.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/situation_statistics_info.dart';
 import 'package:coronavirus/utils/time/datetime_util.dart';
@@ -7,14 +5,17 @@ import 'package:flutter/material.dart';
 
 /// 疫情概况视图
 class EpidemicSituationInfoView extends StatefulWidget {
-  EpidemicSituationInfoView({Key key, this.statisticsInfo, this.areaSituationInfos})
+  EpidemicSituationInfoView(
+      {Key key,
+      @required this.statisticsInfo,
+      @required this.locAreaSituationInfo})
       : super(key: key);
-
   final SituationStatisticsInfo statisticsInfo;
-  final List<AreaSituationInfo> areaSituationInfos;
+  final AreaSituationInfo locAreaSituationInfo;
 
   @override
-  _EpidemicSituationInfoViewState createState() => _EpidemicSituationInfoViewState();
+  _EpidemicSituationInfoViewState createState() =>
+      _EpidemicSituationInfoViewState();
 }
 
 class _EpidemicSituationInfoViewState extends State<EpidemicSituationInfoView> {
@@ -27,22 +28,7 @@ class _EpidemicSituationInfoViewState extends State<EpidemicSituationInfoView> {
   ];
 
   final typeConfirmed = 1, typeSuspected = 2, typedCured = 3, typeDead = 4;
-  AreaSituationInfo _locAreaSituationInfo;
-  bool isCitySituationInfoExpanded = true;
-
-  /// 初始化
-  void _initializer() {
-    LocationPlugin.getLocationInfo().then((value) {
-      setState(() => _locAreaSituationInfo = widget.areaSituationInfos
-          .firstWhere((e) => value.province?.contains(e.provinceShortName)));
-    });
-  }
-
-  @override
-  void initState() {
-    _initializer();
-    super.initState();
-  }
+  bool _isCitySituationInfoExpanded = true;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -56,7 +42,7 @@ class _EpidemicSituationInfoViewState extends State<EpidemicSituationInfoView> {
         Divider(color: const Color(0xfff5f5f5), height: 1),
         _buildTableHeaderView(),
         _buildEpidemicSituationStatisticsInfoView(),
-        if (_locAreaSituationInfo != null)
+        if (widget.locAreaSituationInfo != null)
           _buildLocAreaEpidemicSituationInfoView()
       ]));
 
@@ -107,30 +93,35 @@ class _EpidemicSituationInfoViewState extends State<EpidemicSituationInfoView> {
   Widget _buildLocAreaEpidemicSituationInfoView() => Column(children: [
         InkWell(
             onTap: () => setState(() =>
-                isCitySituationInfoExpanded = !isCitySituationInfoExpanded),
+                _isCitySituationInfoExpanded = !_isCitySituationInfoExpanded),
             child: Padding(
                 padding: EdgeInsets.all(8),
                 child: Row(children: [
                   Expanded(
                       flex: 2,
                       child: Row(children: [
-                        Text(_locAreaSituationInfo?.provinceShortName ?? '',
+                        Text(
+                            widget.locAreaSituationInfo?.provinceShortName ??
+                                '',
                             textAlign: TextAlign.start,
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.bold)),
-                        Icon(isCitySituationInfoExpanded
+                        Icon(widget.locAreaSituationInfo?.cityInfoList?.isNotEmpty == true && !_isCitySituationInfoExpanded
                             ? Icons.arrow_drop_down
                             : Icons.arrow_drop_up)
                       ])),
                   _buildItemView(
-                      typeConfirmed, 3, _locAreaSituationInfo.confirmed),
+                      typeConfirmed, 3, widget.locAreaSituationInfo.confirmed),
                   _buildItemView(
-                      typeSuspected, 3, _locAreaSituationInfo.suspected),
-                  _buildItemView(typedCured, 2, _locAreaSituationInfo.cured),
-                  _buildItemView(typeDead, 2, _locAreaSituationInfo.dead),
+                      typeSuspected, 3, widget.locAreaSituationInfo.suspected),
+                  _buildItemView(
+                      typedCured, 2, widget.locAreaSituationInfo.cured),
+                  _buildItemView(typeDead, 2, widget.locAreaSituationInfo.dead),
                 ]))),
-        if (!isCitySituationInfoExpanded)
-          for (CitySituationInfo itemInfo in _locAreaSituationInfo.cityInfoList)
+        if (widget.locAreaSituationInfo?.cityInfoList?.isNotEmpty == true &&
+            !_isCitySituationInfoExpanded)
+          for (CitySituationInfo itemInfo
+              in widget.locAreaSituationInfo.cityInfoList)
             Padding(
                 padding: EdgeInsets.all(8),
                 child: Row(children: [
@@ -181,4 +172,3 @@ class _EpidemicSituationInfoViewState extends State<EpidemicSituationInfoView> {
                       style: TextStyle(fontSize: 12, color: Colors.black)))
           ]));
 }
-
