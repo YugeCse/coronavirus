@@ -1,6 +1,7 @@
 package com.mrper.coronavirus
 
 import androidx.annotation.NonNull;
+import com.mrper.coronavirus.core.flutter.plugins.LocationFlutterPlugin
 import com.mrper.coronavirus.core.flutter.widgets.ChinaProvinceViewFlutterPlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -11,7 +12,12 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine)
-        flutterEngine.plugins.add(mutableSetOf<FlutterPlugin>(ChinaProvinceViewFlutterPlugin()))
+        flutterEngine.plugins.add(
+                mutableSetOf(
+                        ChinaProvinceViewFlutterPlugin(),
+                        LocationFlutterPlugin()
+                )
+        )
     }
 
 }

@@ -60,10 +60,16 @@ class ChinaProvinceViewController {
       'setSelectedBackgroundColor', {'value': value ?? Colors.red.value});
 
   /// 设置省份的背景色
+  /// + [provinceName] - 省份名称
+  /// + [backgroundColor] - 背景色
+  void setProvinceBackgroundColor(String provinceName, int backgroundColor) =>
+      _methodChannel.invokeMethod('setProvinceBackgroundColor',
+          {'provinceName': provinceName, 'backgroundColor': backgroundColor});
+
+  /// 设置省份的背景色
   /// + [params] - 省份名：backgroundColor(int)
-  set provincesBackgroundColors(Map<String, dynamic> params) =>
-      _methodChannel
-          .invokeMethod('setProvincesBackgroundColors', {'params': params});
+  set provincesBackgroundColors(Map<String, dynamic> params) => _methodChannel
+      .invokeMethod('setProvincesBackgroundColors', {'params': params});
 
   /// 释放对象资源
   void dispose() {

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.view.View
+import com.mrper.coronavirus.BuildConfig
 import com.mrper.coronavirus.core.widgets.china_map.ChinaProvinceView
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -12,7 +13,7 @@ import io.flutter.plugin.common.*
 import io.flutter.plugin.platform.PlatformView
 import io.flutter.plugin.platform.PlatformViewFactory
 
-private const val ChinaProvinceViewFlutterViewTag = "com.mrper.coronavirus.widgets.china-province-view"
+private const val ChinaProvinceViewFlutterViewTag = "${BuildConfig.APPLICATION_ID}.widgets.china-province-view"
 
 /** 中国省份的视图插件 **/
 class ChinaProvinceViewFlutterPlugin : FlutterPlugin {
@@ -67,6 +68,15 @@ class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, private val ctx: 
                         ?: Color.RED
                 result.success(null)
             }
+            "setProvinceBackgroundColor" -> {
+                val provinceName = method.argument<String>("provinceName")
+                provinceName?.let {
+                    chinaProvinceView?.setProvinceBackgroundColor(provinceName,
+                            method.argument<String>("backgroundColor")?.toLong()?.toInt()
+                                    ?: Color.TRANSPARENT)
+                }
+                result.success(null)
+            }
             "setProvincesBackgroundColors" -> {
                 val params = method.argument<Map<String, Any>>("params")
                 params?.let {
@@ -74,6 +84,7 @@ class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, private val ctx: 
                 }
                 result.success(null)
             }
+            else -> result.notImplemented()
         }
     }
 
