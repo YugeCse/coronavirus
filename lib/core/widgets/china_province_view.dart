@@ -4,11 +4,16 @@ import 'package:flutter/services.dart';
 const _ChinaProvinceView_TAG =
     'com.mrper.coronavirus.widgets.china-province-view';
 
+typedef void ChinaProvinceViewCreatedCallback(
+    ChinaProvinceViewController controller);
+
 ///中国行政区域地图控件
 class ChinaProvinceView extends StatefulWidget {
   ChinaProvinceView({
     Key key,
     @required this.width,
+    this.selectedProvinceName,
+    this.selectedBackgroundColor,
     @required this.onViewCreated,
   })  : assert(width != null && width > 0, '地图宽度必须大于0'),
         super(key: key);
@@ -16,8 +21,14 @@ class ChinaProvinceView extends StatefulWidget {
   /// 地图宽度
   final double width;
 
+  /// 被选中的省份的名称
+  final String selectedProvinceName;
+
+  /// 被选中省份的背景色
+  final int selectedBackgroundColor;
+
   /// 视图创建完成的事件
-  final Function onViewCreated;
+  final ChinaProvinceViewCreatedCallback onViewCreated;
 
   @override
   _ChinaProvinceViewState createState() => _ChinaProvinceViewState();
@@ -33,8 +44,13 @@ class _ChinaProvinceViewState extends State<ChinaProvinceView> {
       height: widget.width / _mapWHRatio,
       child: AndroidView(
           viewType: _ChinaProvinceView_TAG,
+          creationParams: {
+            'selectedBackgroundColor': widget.selectedBackgroundColor,
+            'selectedProvinceName': widget.selectedProvinceName
+          },
           creationParamsCodec: StandardMessageCodec(),
-          onPlatformViewCreated: widget.onViewCreated));
+          onPlatformViewCreated: (int viewId) =>
+              widget.onViewCreated(ChinaProvinceViewController(viewId))));
 }
 
 typedef void OnProvinceSelectedChanged(String provinceName, double x, double y);

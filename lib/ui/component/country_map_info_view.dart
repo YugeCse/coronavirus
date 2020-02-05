@@ -23,9 +23,8 @@ class _CountryMapInfoViewState extends State<CountryMapInfoView> {
     {'text': '1-9', 'color': Colors.orange[100]},
   ];
 
-  ChinaProvinceViewController _chinaProvinceViewController;
+  ChinaProvinceViewController _controller;
   double _touchX = 0.0, _touchY = 0.0;
-  bool _isShownLocInfoView = false;
   AreaSituationInfo _selectedAreaSituationInfo;
 
   int _getAreaColorByConfirmedCount(int count) {
@@ -41,8 +40,8 @@ class _CountryMapInfoViewState extends State<CountryMapInfoView> {
       return Colors.transparent.value;
   }
 
-  void _onChinaProvinceViewCreated(int viewId) {
-    _chinaProvinceViewController = ChinaProvinceViewController(viewId)
+  void _onChinaProvinceViewCreated(ChinaProvinceViewController controller) {
+    _controller = controller
       ..selectedBackgroundColor = Colors.blue.value
       ..onProvinceSelectedChanged = (String value, double tx, double ty) {
         setState(() {
@@ -58,7 +57,7 @@ class _CountryMapInfoViewState extends State<CountryMapInfoView> {
     widget.situationInfo.areaSituationInfoList.forEach((e) =>
         areaColorInfoParams[e.provinceShortName] =
             _getAreaColorByConfirmedCount(e.confirmed));
-    _chinaProvinceViewController
+    _controller
       ..provincesBackgroundColors = areaColorInfoParams
       ..selectedProvinceByName = widget.locProvinceName;
   }
@@ -123,7 +122,7 @@ class _CountryMapInfoViewState extends State<CountryMapInfoView> {
 
   @override
   void dispose() {
-    _chinaProvinceViewController?.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 }

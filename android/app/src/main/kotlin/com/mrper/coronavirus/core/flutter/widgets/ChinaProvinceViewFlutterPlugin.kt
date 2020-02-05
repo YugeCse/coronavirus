@@ -24,7 +24,6 @@ class ChinaProvinceViewFlutterPlugin : FlutterPlugin {
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-
     }
 
 }
@@ -36,20 +35,17 @@ class ChinaProvinceViewFlutterViewFactory(private val messenger: BinaryMessenger
 
 }
 
-class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, private val ctx: Context?, viewId: Int, params: Map<String, Any?>?)
+class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, ctx: Context?, viewId: Int, params: Map<String, Any?>?)
     : PlatformView, MethodChannel.MethodCallHandler {
 
-    private var chinaProvinceView: ChinaProvinceView? = null
+    private var chinaProvinceView: ChinaProvinceView
     private var methodChannel: MethodChannel? = null
 
     init {
         methodChannel = MethodChannel(messenger, "$ChinaProvinceViewFlutterViewTag-$viewId").apply {
             setMethodCallHandler(this@ChinaProvinceViewFlutterView)
         }
-    }
-
-    override fun getView(): View {
-        if (chinaProvinceView == null) chinaProvinceView = ChinaProvinceView(ctx).apply {
+        chinaProvinceView = ChinaProvinceView(ctx).apply {
             onProvinceSelectedChanged = { provinceInfo, point ->
                 methodChannel?.invokeMethod("onProvinceSelectedChanged", mapOf(
                         "name" to provinceInfo?.provinceLayerPathInfo?.name,
@@ -57,27 +53,33 @@ class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, private val ctx: 
                         "ty" to point?.y
                 ))
             }
+            if (params?.containsKey("selectedBackgroundColor") == true)
+                selectedBackgroundColor = params["selectedBackgroundColor"]?.toString()?.toLong()?.toInt()
+                        ?: Color.RED
+            if (params?.containsKey("selectedProvinceName") == true && params["selectedProvinceName"] != null)
+                setSelectedProvinceByName(params["selectedProvinceName"].toString())
         }
-        return chinaProvinceView!!
     }
+
+    override fun getView(): View = chinaProvinceView
 
     override fun onMethodCall(method: MethodCall, result: MethodChannel.Result) {
         when (method.method) {
             "setSelectedProvinceByName" -> {
                 val provinceName = method.argument<String>("provinceName")
                 if (!provinceName.isNullOrEmpty())
-                    chinaProvinceView?.setSelectedProvinceByName(provinceName)
+                    chinaProvinceView.setSelectedProvinceByName(provinceName)
                 result.success(null)
             }
             "setSelectedBackgroundColor" -> { //设置选中后的区域背景色
-                chinaProvinceView?.selectedBackgroundColor = method.argument<Long>("value")?.toInt()
+                chinaProvinceView.selectedBackgroundColor = method.argument<Long>("value")?.toInt()
                         ?: Color.RED
                 result.success(null)
             }
             "setProvinceBackgroundColor" -> {
                 val provinceName = method.argument<String>("provinceName")
                 provinceName?.let {
-                    chinaProvinceView?.setProvinceBackgroundColor(provinceName,
+                    chinaProvinceView.setProvinceBackgroundColor(provinceName,
                             method.argument<String>("backgroundColor")?.toLong()?.toInt()
                                     ?: Color.TRANSPARENT)
                 }
@@ -86,7 +88,7 @@ class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, private val ctx: 
             "setProvincesBackgroundColors" -> {
                 val params = method.argument<Map<String, Any>>("params")
                 params?.let {
-                    chinaProvinceView?.setProvincesBackgroundColors(params)
+                    chinaProvinceView.setProvincesBackgroundColors(params)
                 }
                 result.success(null)
             }
@@ -95,14 +97,10 @@ class ChinaProvinceViewFlutterView(messenger: BinaryMessenger, private val ctx: 
     }
 
     override fun dispose() {
-        if (methodChannel != null) {
-            methodChannel?.setMethodCallHandler(null)
-            methodChannel = null
-        }
-        if (chinaProvinceView != null) {
-            chinaProvinceView?.onProvinceSelectedChanged = null
-            chinaProvinceView = null
-        }
+//        if (methodChannel != null) {
+//            methodChannel?.setMethodCallHandler(null)
+//            methodChannel = null
+//        }
     }
 
 }

@@ -31,13 +31,14 @@ class EpidemicSituationTimelineInfoView extends StatelessWidget {
                 physics: NeverScrollableScrollPhysics(),
                 itemBuilder: (_, position) => _buildTimelineItemView(
                     _situationInfo.timelineInfoList[position]),
-                separatorBuilder: (_, __) => Divider(),
+                separatorBuilder: (_, __) =>
+                    Divider(height: 1, color: const Color(0xfff5f5f5)),
                 itemCount: _situationInfo.timelineInfoList?.length ?? 0))
       ]));
 
   Widget _buildTimelineItemView(TimeLineInfo itemInfo) => Container(
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Text(itemInfo.title,
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
         Padding(
@@ -45,8 +46,9 @@ class EpidemicSituationTimelineInfoView extends StatelessWidget {
             child: Text(itemInfo.summary,
                 style: TextStyle(color: Colors.grey[600]))),
         Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Expanded(child: Text('来源：${itemInfo.infoSource}',
-              style: TextStyle(fontSize: 13, color: Colors.grey[500]))),
+          Expanded(
+              child: Text('来源：${itemInfo.infoSource}',
+                  style: TextStyle(fontSize: 13, color: Colors.grey[500]))),
           Text('发布时间：${itemInfo.modifyTime.toDateString()}',
               style: TextStyle(fontSize: 13, color: Colors.grey[500]))
         ])

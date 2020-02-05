@@ -22,7 +22,8 @@
         android:name="io.flutter.app.FlutterApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="疫情信息"
-        tools:ignore="GoogleAppIndexingWarning">
+        android:usesCleartextTraffic="true"
+        tools:ignore="GoogleAppIndexingWarning,UnusedAttribute">
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="0iugAZjtI1PBSGUrr9DVModEsYlu0h1N" />

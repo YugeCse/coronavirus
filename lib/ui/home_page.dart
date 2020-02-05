@@ -18,6 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   LoaderState _loaderState = LoaderState.Loading;
+  int _exitTime = 0;
   CornonavirusSituationInfo _situationInfo;
   String _locProvinceName; //当前定位到的省份位置
 
@@ -53,6 +54,16 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  bool _onBackPressed() {
+    var currentTime = DateTime.now().millisecondsSinceEpoch;
+    if (currentTime - _exitTime >= 800) {
+      _exitTime = currentTime;
+      showToast('再按一次退出应用');
+      return false;
+    }
+    return true;
+  }
+
   @override
   void initState() {
     _initializer();
@@ -60,33 +71,38 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-      backgroundColor: const Color(0xfff5f5f5),
-      appBar: AppBar(
-          title: Column(children: [
-            Text('全国疫情状况'),
-            Text('数据来源：丁香园', style: TextStyle(fontSize: 8))
-          ]),
-          centerTitle: true),
-      body: LoaderContainer(
-          state: _loaderState,
-          onReload: getEpidemicSituationInfo,
-          contentView: _situationInfo == null
-              ? Container()
-              : RefreshIndicator(
-                  onRefresh: () async => getEpidemicSituationInfo(),
-                  child: _buildContentView())));
+  Widget build(BuildContext context) => WillPopScope(
+      onWillPop: () async => _onBackPressed(),
+      child: Scaffold(
+          backgroundColor: const Color(0xfff5f5f5),
+          appBar: AppBar(
+              centerTitle: true,
+              title: Column(children: [
+                Text('全国疫情状况',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('数据来源：丁香园', style: TextStyle(fontSize: 8))
+              ])),
+          body: LoaderContainer(
+              state: _loaderState,
+              onReload: getEpidemicSituationInfo,
+              contentView: _situationInfo == null
+                  ? Container()
+                  : RefreshIndicator(
+                      onRefresh: () async => getEpidemicSituationInfo(),
+                      child: _buildContentView()))));
 
   Widget _buildContentView() => SingleChildScrollView(
       physics: AlwaysScrollableScrollPhysics(),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         EpidemicSituationInfoView(
             statisticsInfo: _situationInfo.statisticsInfo,
-            locAreaSituationInfo: _situationInfo.areaSituationInfoList != null
-                ? _situationInfo.areaSituationInfoList.firstWhere((e) =>
-                    _locProvinceName != null &&
-                    _locProvinceName.contains(e.provinceShortName))
-                : null),
+            locAreaSituationInfo:
+                _situationInfo?.areaSituationInfoList?.isNotEmpty == true
+                    ? _situationInfo.areaSituationInfoList.firstWhere((e) =>
+                        _locProvinceName != null &&
+                        _locProvinceName.contains(e.provinceShortName))
+                    : null),
         CountryMapInfoView(
             locProvinceName: _locProvinceName, situationInfo: _situationInfo),
         EpidemicSituationTimelineInfoView(situationInfo: _situationInfo)
