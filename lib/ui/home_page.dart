@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   String _locProvinceName; //当前定位到的省份位置
 
   /// 请求应用权限
-  void _requestAppPermission() async {
+  Future<void> _requestAppPermission() async {
     var locPerRet = await PermissionHandler()
         .checkPermissionStatus(PermissionGroup.location);
     var rwPerRet = await PermissionHandler()
@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
 
   /// 初始化
   void _initializer() async {
-    _requestAppPermission(); //请求应用权限
+    await _requestAppPermission(); //请求应用权限
     Future.microtask(() => getEpidemicSituationInfo(isFirstLoad: true));
     LocationPlugin.getLocationInfo()
         .then((value) => setState(() => _locProvinceName = value.province));
