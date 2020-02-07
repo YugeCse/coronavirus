@@ -6,10 +6,10 @@ class ClassicalNoDataView extends StatelessWidget {
   ClassicalNoDataView({
     Key key,
     this.imagePath,
-    double imageWidth = 80,
-    double imageHeight = 80,
+    double imageWidth = 120,
+    double imageHeight = 120,
     Size imageSize,
-    double spacingFromImageToText = 12,
+    double spacingFromImageToText = 80,
     this.messageText = '暂无相关数据 ~',
     double messageTextSize,
     this.messageTextColor = const Color(0xff999999),
@@ -20,7 +20,7 @@ class ClassicalNoDataView extends StatelessWidget {
     double buttonWidth = 120,
     double buttonHeight = 35,
     Size buttonSize,
-    this.buttonBorderRadius = BorderRadius.zero,
+    this.buttonBorderRadius = const BorderRadius.all(Radius.circular(5)),
     double spacingFromTextToButton = 35,
     this.onRefresh,
   })  : assert(
@@ -31,7 +31,7 @@ class ClassicalNoDataView extends StatelessWidget {
         assert(buttonText != null && buttonText.isNotEmpty,
             '参数：[buttonText]不能为Null或空字符串'),
         imageSize = imageSize ?? Size(imageWidth, imageHeight),
-        spacingFromImageToText = spacingFromImageToText ?? 12,
+        spacingFromImageToText = spacingFromImageToText ?? 80,
         messageTextSize = messageTextSize ?? 12,
         buttonTextSize = buttonTextSize ?? 14,
         buttonSize = buttonSize ?? Size(buttonWidth, buttonHeight),
@@ -89,7 +89,7 @@ class ClassicalNoDataView extends StatelessWidget {
             Image.asset(
                 imagePath?.isNotEmpty == true
                     ? imagePath
-                    : 'res/image/ic_default_load_data_failed.png',
+                    : 'assets/images/ic_default_load_data_failed.png',
                 width: imageSize.width,
                 height: imageSize.height),
             Padding(

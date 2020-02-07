@@ -2,8 +2,9 @@ import 'package:coronavirus/api/http/http_api_repositories.dart';
 import 'package:coronavirus/core/plugins/location_plugin.dart';
 import 'package:coronavirus/core/widgets/loader_container/loader_container.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/coronavirus_situation_info.dart';
-import 'package:coronavirus/ui/component/country_map_info_view.dart';
-import 'package:coronavirus/ui/component/epidemic_situation_info_view.dart';
+import 'package:coronavirus/ui/component/epidemic_situation_chart_info_view.dart';
+import 'package:coronavirus/ui/component/epidemic_situation_map_info_view.dart';
+import 'package:coronavirus/ui/component/epidemic_situation_statistics_info_view.dart';
 import 'package:coronavirus/ui/component/epidemic_situation_timeline_info_view.dart';
 import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
@@ -75,14 +76,7 @@ class _HomePageState extends State<HomePage> {
       onWillPop: () async => _onBackPressed(),
       child: Scaffold(
           backgroundColor: const Color(0xfff5f5f5),
-          appBar: AppBar(
-              centerTitle: true,
-              title: Column(children: [
-                Text('全国疫情状况',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text('数据来源：丁香园', style: TextStyle(fontSize: 8))
-              ])),
+          appBar: _buildAppBar(),
           body: LoaderContainer(
               state: _loaderState,
               onReload: getEpidemicSituationInfo,
@@ -92,10 +86,19 @@ class _HomePageState extends State<HomePage> {
                       onRefresh: () async => getEpidemicSituationInfo(),
                       child: _buildContentView()))));
 
+  Widget _buildAppBar() => AppBar(
+      centerTitle: true,
+      title: Column(children: [
+        Text('全国疫情状况',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text('数据来源：丁香园·丁香医生', style: TextStyle(fontSize: 8))
+      ]),
+      actions: [IconButton(onPressed: () {}, icon: Icon(Icons.share))]);
+
   Widget _buildContentView() => SingleChildScrollView(
       physics: AlwaysScrollableScrollPhysics(),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        EpidemicSituationInfoView(
+        EpidemicSituationStatisticsInfoView(
             statisticsInfo: _situationInfo.statisticsInfo,
             locAreaSituationInfo:
                 _situationInfo?.areaSituationInfoList?.isNotEmpty == true
@@ -103,8 +106,10 @@ class _HomePageState extends State<HomePage> {
                         _locProvinceName != null &&
                         _locProvinceName.contains(e.provinceShortName))
                     : null),
-        CountryMapInfoView(
+        EpidemicSituationMapInfoView(
             locProvinceName: _locProvinceName, situationInfo: _situationInfo),
+        EpidemicSituationChartInfoView(
+            context: context, situationInfo: _situationInfo),
         EpidemicSituationTimelineInfoView(situationInfo: _situationInfo)
       ]));
 }

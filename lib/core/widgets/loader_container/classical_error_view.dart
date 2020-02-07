@@ -7,10 +7,10 @@ class ClassicalErrorView extends StatelessWidget {
   ClassicalErrorView({
     Key key,
     this.imagePath,
-    double imageWidth = 80,
-    double imageHeight = 80,
+    double imageWidth = 120,
+    double imageHeight = 120,
     Size imageSize,
-    double spacingFromImageToText = 12,
+    double spacingFromImageToText = 80,
     this.messageText = '加载失败，请稍后点击重试',
     this.messageTextColor = const Color(0xff999999),
     double messageTextSize = 12,
@@ -21,7 +21,7 @@ class ClassicalErrorView extends StatelessWidget {
     double buttonWidth = 120,
     double buttonHeight = 35,
     Size buttonSize,
-    this.buttonBorderRadius = BorderRadius.zero,
+    this.buttonBorderRadius = const BorderRadius.all(Radius.circular(5)),
     double spacingFromTextToButton = 35,
     this.onReload,
   })  : assert(messageText != null && messageText.isNotEmpty,
@@ -33,7 +33,7 @@ class ClassicalErrorView extends StatelessWidget {
         assert(buttonSize != null ||
             (buttonWidth != null && buttonHeight != null)),
         imageSize = imageSize ?? Size(imageWidth, imageHeight),
-        spacingFromImageToText = spacingFromImageToText ?? 12,
+        spacingFromImageToText = spacingFromImageToText ?? 80,
         messageTextSize = messageTextSize ?? 12,
         buttonTextSize = buttonTextSize ?? 14,
         spacingFromTextToButton = spacingFromTextToButton ?? 35,
@@ -88,7 +88,7 @@ class ClassicalErrorView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-            Image.asset('res/image/ic_default_load_data_failed.png',
+            Image.asset('assets/images/ic_default_load_data_failed.png',
                 width: imageSize.width, height: imageSize.height),
             Padding(
                 padding: EdgeInsets.only(top: spacingFromImageToText),

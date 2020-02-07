@@ -4,8 +4,8 @@ import 'package:coronavirus/utils/time/datetime_util.dart';
 import 'package:flutter/material.dart';
 
 /// 疫情概况视图
-class EpidemicSituationInfoView extends StatefulWidget {
-  EpidemicSituationInfoView(
+class EpidemicSituationStatisticsInfoView extends StatefulWidget {
+  EpidemicSituationStatisticsInfoView(
       {Key key,
       @required this.statisticsInfo,
       @required this.locAreaSituationInfo})
@@ -14,11 +14,12 @@ class EpidemicSituationInfoView extends StatefulWidget {
   final AreaSituationInfo locAreaSituationInfo;
 
   @override
-  _EpidemicSituationInfoViewState createState() =>
-      _EpidemicSituationInfoViewState();
+  _EpidemicSituationStatisticsInfoViewState createState() =>
+      _EpidemicSituationStatisticsInfoViewState();
 }
 
-class _EpidemicSituationInfoViewState extends State<EpidemicSituationInfoView> {
+class _EpidemicSituationStatisticsInfoViewState
+    extends State<EpidemicSituationStatisticsInfoView> {
   final _situationTitles = [
     {'name': '地区', 'flex': 2},
     {'name': '确诊', 'flex': 3},
@@ -54,8 +55,10 @@ class _EpidemicSituationInfoViewState extends State<EpidemicSituationInfoView> {
         Expanded(
             child: Padding(
                 padding: EdgeInsets.only(top: 3),
-                child: Text(widget.statisticsInfo.modifyTime.toDateString(),
-                    textAlign: TextAlign.end)))
+                child: Text(
+                    '数据截至于${widget.statisticsInfo.modifyTime.toDateString()}',
+                    textAlign: TextAlign.end,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]))))
       ]));
 
   Widget _buildTableHeaderView() => Padding(
@@ -72,14 +75,31 @@ class _EpidemicSituationInfoViewState extends State<EpidemicSituationInfoView> {
                           fontSize: 15, fontWeight: FontWeight.bold))))
               .toList()));
 
+  Widget _buildAreaNameRowItemView(String name,
+      {double textSize = 14, Color textColor, bool hasCities = false}) {
+    var nameWidget = Text(name,
+        textAlign: TextAlign.start,
+        style: TextStyle(
+            fontSize: textSize, fontWeight: FontWeight.bold, color: textColor));
+    var retWidget = !hasCities
+        ? nameWidget
+        : Row(children: [
+            nameWidget,
+            Padding(
+                padding: EdgeInsets.only(top: 3),
+                child: Icon(
+                    hasCities && !_isCitySituationInfoExpanded
+                        ? Icons.arrow_drop_up
+                        : Icons.arrow_drop_down,
+                    size: 15))
+          ]);
+    return Expanded(flex: 2, child: retWidget);
+  }
+
   Widget _buildEpidemicSituationStatisticsInfoView() => Padding(
       padding: EdgeInsets.all(8),
       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Expanded(
-            flex: 2,
-            child: Text('全国',
-                textAlign: TextAlign.start,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
+        _buildAreaNameRowItemView('全国'),
         _buildItemView(typeConfirmed, 3, widget.statisticsInfo.confirmedCount,
             incrValue: widget.statisticsInfo.confirmedIncr),
         _buildItemView(typeSuspected, 3, widget.statisticsInfo.suspectedCount,
@@ -97,19 +117,11 @@ class _EpidemicSituationInfoViewState extends State<EpidemicSituationInfoView> {
             child: Padding(
                 padding: EdgeInsets.all(8),
                 child: Row(children: [
-                  Expanded(
-                      flex: 2,
-                      child: Row(children: [
-                        Text(
-                            widget.locAreaSituationInfo?.provinceShortName ??
-                                '',
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.bold)),
-                        Icon(widget.locAreaSituationInfo?.cityInfoList?.isNotEmpty == true && !_isCitySituationInfoExpanded
-                            ? Icons.arrow_drop_down
-                            : Icons.arrow_drop_up)
-                      ])),
+                  _buildAreaNameRowItemView(
+                      widget.locAreaSituationInfo?.provinceShortName ?? '',
+                      hasCities: widget
+                              .locAreaSituationInfo?.cityInfoList?.isNotEmpty ==
+                          true),
                   _buildItemView(
                       typeConfirmed, 3, widget.locAreaSituationInfo.confirmed),
                   _buildItemView(
@@ -120,19 +132,12 @@ class _EpidemicSituationInfoViewState extends State<EpidemicSituationInfoView> {
                 ]))),
         if (widget.locAreaSituationInfo?.cityInfoList?.isNotEmpty == true &&
             !_isCitySituationInfoExpanded)
-          for (CitySituationInfo itemInfo
-              in widget.locAreaSituationInfo.cityInfoList)
+          for (var itemInfo in widget.locAreaSituationInfo.cityInfoList)
             Padding(
                 padding: EdgeInsets.all(8),
                 child: Row(children: [
-                  Expanded(
-                      flex: 2,
-                      child: Text(itemInfo.cityName ?? '',
-                          textAlign: TextAlign.start,
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[500]))),
+                  _buildAreaNameRowItemView(itemInfo.cityName ?? '',
+                      textSize: 13, textColor: Colors.grey[500]),
                   _buildItemView(typeConfirmed, 3, itemInfo.confirmed,
                       isCityData: true),
                   _buildItemView(typeSuspected, 3, itemInfo.suspected,

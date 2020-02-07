@@ -1,43 +1,47 @@
 import 'package:coronavirus/core/widgets/china_province_view.dart';
+import 'package:coronavirus/core/widgets/rounded_button.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/area_situation_info.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/coronavirus_situation_info.dart';
 import 'package:flutter/material.dart';
 
 /// 行政区域的疫情情况视图
-class CountryMapInfoView extends StatefulWidget {
-  CountryMapInfoView(
+class EpidemicSituationMapInfoView extends StatefulWidget {
+  EpidemicSituationMapInfoView(
       {Key key, @required this.locProvinceName, @required this.situationInfo})
       : super(key: key);
   final String locProvinceName;
   final CornonavirusSituationInfo situationInfo;
 
   @override
-  _CountryMapInfoViewState createState() => _CountryMapInfoViewState();
+  _EpidemicSituationMapInfoViewState createState() =>
+      _EpidemicSituationMapInfoViewState();
 }
 
-class _CountryMapInfoViewState extends State<CountryMapInfoView> {
+class _EpidemicSituationMapInfoViewState
+    extends State<EpidemicSituationMapInfoView> {
   final _areaColorInfos = [
-    {'text': '500及以上', 'color': Colors.red[900]},
-    {'text': '100-499', 'color': Colors.deepOrange},
-    {'text': '10-99', 'color': Colors.orange[300]},
-    {'text': '1-9', 'color': Colors.orange[100]},
+    {'text': '>=10000', 'min': 10000, 'color': Color(0xff551111)},
+    {'text': '1000-9999', 'min': 1000, 'max': 9999, 'color': Color(0xff730111)},
+    {'text': '500-999', 'min': 500, 'max': 999, 'color': Color(0xffc51111)},
+    {'text': '100-499', 'min': 100, 'max': 499, 'color': Color(0xfffa5555)},
+    {'text': '10-99', 'min': 10, 'max': 99, 'color': Colors.orange[300]},
+    {'text': '1-9', 'min': 1, 'max': 9, 'color': Colors.orange[100]},
   ];
 
   ChinaProvinceViewController _controller;
   double _touchX = 0.0, _touchY = 0.0;
   AreaSituationInfo _selectedAreaSituationInfo;
 
-  int _getAreaColorByConfirmedCount(int count) {
-    if (count >= 500)
-      return Colors.red[900].value;
-    else if (count >= 100 && count < 500)
-      return Colors.deepOrange.value;
-    else if (count >= 10 && count < 99)
-      return Colors.orange[300].value;
-    else if (count >= 1 && count < 9)
-      return Colors.orange[100].value;
-    else
-      return Colors.transparent.value;
+  Color _getAreaColorByConfirmedCount(int count) {
+    var ret = _areaColorInfos.firstWhere((e) {
+      int min = e['min'] as int;
+      int max = e['max'] as int;
+      if (max == null && count >= min) //只有最小，没有最大
+        return true;
+      return count >= min && count <= max;
+    });
+    if (ret != null) return ret['color'];
+    return Colors.transparent;
   }
 
   void _onChinaProvinceViewCreated(ChinaProvinceViewController controller) {
@@ -56,10 +60,10 @@ class _CountryMapInfoViewState extends State<CountryMapInfoView> {
     var areaColorInfoParams = Map<String, dynamic>();
     widget.situationInfo.areaSituationInfoList.forEach((e) =>
         areaColorInfoParams[e.provinceShortName] =
-            _getAreaColorByConfirmedCount(e.confirmed));
-    _controller
-      ..provincesBackgroundColors = areaColorInfoParams
-      ..selectedProvinceByName = widget.locProvinceName;
+            _getAreaColorByConfirmedCount(e.confirmed).value);
+    _controller.provincesBackgroundColors = areaColorInfoParams;
+    Future.delayed(const Duration(seconds: 1),
+        () => _controller.selectedProvinceByName = widget.locProvinceName);
   }
 
   @override
@@ -97,20 +101,27 @@ class _CountryMapInfoViewState extends State<CountryMapInfoView> {
   Widget _buildAreaColorInfoView() => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: _areaColorInfos
-          .map(
-              (e) => Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Container(width: 14, height: 14, color: e['color']),
-                    Padding(
-                        padding: EdgeInsets.only(top: 3, left: 3),
-                        child: Text(e['text'], style: TextStyle(fontSize: 12)))
-                  ]))
+          .map((e) => Padding(
+              padding: EdgeInsets.only(top: 3),
+              child:
+                  Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                        color: e['color'],
+                        borderRadius: BorderRadius.all(Radius.circular(8)))),
+                Padding(
+                    padding: EdgeInsets.only(left: 3),
+                    child: Text(e['text'], style: TextStyle(fontSize: 9)))
+              ])))
           .toList());
 
-  Widget _buildAreaInfoPopView() => Container(
+  Widget _buildAreaInfoPopView() => RoundedButton(
+      onPressed: () {},
       padding: EdgeInsets.all(5),
-      decoration: BoxDecoration(
-          color: const Color(0xb8000000),
-          borderRadius: BorderRadius.circular(5)),
+      color: const Color(0xb8000000),
+      borderRadius: BorderRadius.circular(5),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('省份：${_selectedAreaSituationInfo.provinceShortName}',
             style: TextStyle(fontSize: 11, color: Colors.white)),
