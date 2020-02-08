@@ -40,7 +40,7 @@ class TimeLineInfo {
     ..pubDate = json['pubDate'] as int
     ..pubDateStr = json['pubDateStr'] as String
     ..title = json['title'] as String
-    ..summary = json['summary'] as String
+    ..summary = (json['summary'] as String)?.trim()
     ..infoSource = json['infoSource'] as String
     ..sourceUrl = json['sourceUrl'] as String
     ..provinceId = json['provinceId'] as String

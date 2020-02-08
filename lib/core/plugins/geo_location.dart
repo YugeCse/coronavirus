@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
-class LocationPlugin {
-  factory LocationPlugin._() => null;
+class GeoLocation {
+  factory GeoLocation._() => null;
 
   static const MethodChannel _methodChannel =
       const MethodChannel('com.mrper.coronavirus.plugins.location-plugin');

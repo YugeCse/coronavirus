@@ -56,7 +56,7 @@ class _EpidemicSituationStatisticsInfoViewState
             child: Padding(
                 padding: EdgeInsets.only(top: 3),
                 child: Text(
-                    '数据截至于${widget.statisticsInfo.modifyTime.toDateString()}',
+                    '数据截至${widget.statisticsInfo.modifyTime.toDateString()}',
                     textAlign: TextAlign.end,
                     style: TextStyle(fontSize: 12, color: Colors.grey[500]))))
       ]));
@@ -109,6 +109,22 @@ class _EpidemicSituationStatisticsInfoViewState
         _buildItemView(typeDead, 2, widget.statisticsInfo.deadCount,
             incrValue: widget.statisticsInfo.deadIncr),
       ]));
+
+Widget _buildOtherCountriesEpidemicSituationInfoView() => Column(children:[
+  Padding(
+      padding: EdgeInsets.all(8),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        _buildAreaNameRowItemView('全国'),
+        _buildItemView(typeConfirmed, 3, widget.statisticsInfo.confirmedCount,
+            incrValue: widget.statisticsInfo.confirmedIncr),
+        _buildItemView(typeSuspected, 3, widget.statisticsInfo.suspectedCount,
+            incrValue: widget.statisticsInfo.suspectedIncr),
+        _buildItemView(typedCured, 2, widget.statisticsInfo.curedCount,
+            incrValue: widget.statisticsInfo.curedIncr),
+        _buildItemView(typeDead, 2, widget.statisticsInfo.deadCount,
+            incrValue: widget.statisticsInfo.deadIncr),
+      ]))
+]);
 
   Widget _buildLocAreaEpidemicSituationInfoView() => Column(children: [
         InkWell(

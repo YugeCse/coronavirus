@@ -1,10 +1,12 @@
 import 'package:coronavirus/core/routes/animation_page_route.dart';
+import 'package:coronavirus/data/models/epidemic_situation_info_model.dart';
 import 'package:coronavirus/ui/browser_page.dart';
 import 'package:coronavirus/ui/home_page.dart';
 import 'package:coronavirus/data/constants/route_name_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -36,9 +38,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) => OKToast(
       dismissOtherOnShow: true,
       position: ToastPosition(align: Alignment.bottomCenter, offset: -80),
-      child: MaterialApp(
-          title: '全国疫情状况',
-          theme: ThemeData(primarySwatch: Colors.blue),
-          initialRoute: '/',
-          onGenerateRoute: _onGenerateRoute));
+      child: ChangeNotifierProvider(
+          create: (_) => EpidemicSituationInfoModel(),
+          child: MaterialApp(
+              title: '全国疫情状况',
+              theme: ThemeData(primarySwatch: Colors.blue),
+              initialRoute: '/',
+              onGenerateRoute: _onGenerateRoute)));
 }

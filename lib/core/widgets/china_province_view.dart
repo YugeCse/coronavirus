@@ -41,7 +41,7 @@ class _ChinaProvinceViewState extends State<ChinaProvinceView> {
   @override
   Widget build(BuildContext context) => SizedBox(
       width: widget.width,
-      height: widget.width / _mapWHRatio,
+      height: widget.width / _mapWHRatio + 2,
       child: AndroidView(
           viewType: _ChinaProvinceView_TAG,
           creationParams: {

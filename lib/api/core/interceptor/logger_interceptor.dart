@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:coronavirus/core/plugins/log.dart';
 import 'package:dio/dio.dart';
 
 /// [LogInterceptor] is used to print logs during network requests.
@@ -129,6 +130,6 @@ class LoggerInterceptor extends Interceptor {
   }
 
   printAll(msg) {
-    msg.toString().split("\n").forEach(logPrint);
+    Log.i('I/flutter', msg.toString());
   }
 }

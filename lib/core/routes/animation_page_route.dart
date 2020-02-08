@@ -56,14 +56,12 @@ enum AnimationType {
 class AnimationPageRoute<T> extends PageRoute<T> {
   AnimationPageRoute({
     @required this.builder,
-    this.isExitPageAffectedOrNot = true,
     this.animationType = AnimationType.SlideRightToLeft,
     this.animationDuration = const Duration(milliseconds: 450),
     RouteSettings settings,
     this.maintainState = true,
     bool fullscreenDialog = false,
   })  : assert(builder != null),
-        assert(isExitPageAffectedOrNot != null),
         assert(animationType != null &&
             [AnimationType.SlideRightToLeft, AnimationType.SlideLeftToRight]
                 .contains(animationType)),
@@ -74,10 +72,6 @@ class AnimationPageRoute<T> extends PageRoute<T> {
 
   /// 页面构造
   final WidgetBuilder builder;
-
-  /// 当前页面是否有动画，默认为：`TRUE`，
-  /// 注意：当[AnimationType]为[SlideLeftToRight]或[SlideRightToLeft]，新页面及当前页面动画均有效
-  final bool isExitPageAffectedOrNot;
 
   /// 动画类型
   final AnimationType animationType;
@@ -130,26 +124,19 @@ class AnimationPageRoute<T> extends PageRoute<T> {
       primaryTween = _primaryTweenSlideFromLeftToRight;
       secondaryTween = _secondaryTweenSlideFromLeftToRight;
     }
-    Widget enterAnimWidget = SlideTransition(
-        position: CurvedAnimation(
-          parent:
-              settings?.isInitialRoute == true ? secondaryAnimation : animation,
-          curve: curve,
-          reverseCurve: reverseCurve,
-        ).drive(
-            settings?.isInitialRoute == true ? secondaryTween : primaryTween),
-        textDirection: textDirection,
-        child: child);
-    if (isExitPageAffectedOrNot != true || settings?.isInitialRoute == true)
-      return enterAnimWidget;
     return SlideTransition(
         position: CurvedAnimation(
-          parent: secondaryAnimation,
-          curve: curve,
-          reverseCurve: reverseCurve,
-        ).drive(secondaryTween),
+                parent: secondaryAnimation,
+                curve: curve,
+                reverseCurve: reverseCurve)
+            .drive(secondaryTween),
         textDirection: textDirection,
-        child: enterAnimWidget);
+        child: SlideTransition(
+            position: CurvedAnimation(
+                    parent: animation, curve: curve, reverseCurve: reverseCurve)
+                .drive(primaryTween),
+            textDirection: textDirection,
+            child: child));
   }
 
   @override
