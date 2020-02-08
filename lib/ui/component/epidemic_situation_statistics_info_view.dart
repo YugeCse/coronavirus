@@ -110,22 +110,6 @@ class _EpidemicSituationStatisticsInfoViewState
             incrValue: widget.statisticsInfo.deadIncr),
       ]));
 
-Widget _buildOtherCountriesEpidemicSituationInfoView() => Column(children:[
-  Padding(
-      padding: EdgeInsets.all(8),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        _buildAreaNameRowItemView('全国'),
-        _buildItemView(typeConfirmed, 3, widget.statisticsInfo.confirmedCount,
-            incrValue: widget.statisticsInfo.confirmedIncr),
-        _buildItemView(typeSuspected, 3, widget.statisticsInfo.suspectedCount,
-            incrValue: widget.statisticsInfo.suspectedIncr),
-        _buildItemView(typedCured, 2, widget.statisticsInfo.curedCount,
-            incrValue: widget.statisticsInfo.curedIncr),
-        _buildItemView(typeDead, 2, widget.statisticsInfo.deadCount,
-            incrValue: widget.statisticsInfo.deadIncr),
-      ]))
-]);
-
   Widget _buildLocAreaEpidemicSituationInfoView() => Column(children: [
         InkWell(
             onTap: () => setState(() =>

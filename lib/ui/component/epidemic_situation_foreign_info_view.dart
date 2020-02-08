@@ -1,4 +1,3 @@
-import 'package:coronavirus/data/entities/epidemic_situation/area_situation_info.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/foreign_situation_info.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/situation_statistics_info.dart';
 import 'package:coronavirus/utils/time/datetime_util.dart';
@@ -9,11 +8,9 @@ class EpidemicSituationForeignInfoView extends StatefulWidget {
   EpidemicSituationForeignInfoView(
       {Key key,
       @required this.statisticsInfo,
-      @required this.locAreaSituationInfo,
       @required this.foreignSituationInfoList})
       : super(key: key);
   final SituationStatisticsInfo statisticsInfo;
-  final AreaSituationInfo locAreaSituationInfo;
   final List<ForeignSituationInfo> foreignSituationInfoList;
 
   @override
@@ -84,7 +81,7 @@ class _EpidemicSituationForeignInfoViewState
             fontSize: textSize, fontWeight: FontWeight.bold, color: textColor));
     var retWidget = !hasCities
         ? nameWidget
-        : Row(children: [
+        : Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
             nameWidget,
             Padding(
                 padding: EdgeInsets.only(top: 3),

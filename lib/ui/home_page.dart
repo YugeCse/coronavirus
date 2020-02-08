@@ -44,7 +44,7 @@ class _HomePageState extends State<HomePage>
       var result = await PermissionHandler().requestPermissions(
           [PermissionGroup.location, PermissionGroup.storage]);
       if (result[PermissionGroup.location] != PermissionStatus.granted)
-        showToast('请求应用权限失败，应用的某些功能会受到限制');
+        showToast('获取定位权限失败，某些功能可能会受到限制');
     }
   }
 
@@ -53,6 +53,16 @@ class _HomePageState extends State<HomePage>
     _tabSelectedIndex = 0; //默认tab选中的索引为0
     _tabController = TabController(initialIndex: 0, length: 2, vsync: this);
     await _requestAppPermission(); //请求应用权限
+  }
+
+  void _initAndLoadDataProvider() {
+    var epidemicSiuationInfo =
+        Provider.of<EpidemicSituationInfoModel>(context, listen: true);
+    if (_epidemicSituationInfo != epidemicSiuationInfo) {
+      _epidemicSituationInfo = epidemicSiuationInfo;
+      GeoLocation.getLocationInfo().then(
+          (value) => _epidemicSituationInfo.locProvinceName = value.province);
+    }
   }
 
   Future<bool> getEpidemicSituationInfo({bool isFirstLoad = false}) async {
@@ -82,14 +92,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   void didChangeDependencies() {
-    var epidemicSiuationInfo =
-        Provider.of<EpidemicSituationInfoModel>(context, listen: true);
-    if (_epidemicSituationInfo != epidemicSiuationInfo) {
-      _epidemicSituationInfo = epidemicSiuationInfo;
-      GeoLocation.getLocationInfo().then(
-          (value) => _epidemicSituationInfo.locProvinceName = value.province);
-      Future.microtask(() => getEpidemicSituationInfo(isFirstLoad: true));
-    }
+    _initAndLoadDataProvider();
     super.didChangeDependencies();
   }
 
@@ -99,19 +102,7 @@ class _HomePageState extends State<HomePage>
       child: Scaffold(
           backgroundColor: const Color(0xfff5f5f5),
           appBar: _buildAppBar(),
-          body: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                _buildTabBarView(),
-                Divider(height: 1, color: Color(0xfff0f0f0)),
-                _buildTabBar((index) {
-                  if (_tabSelectedIndex != index) {
-                    _tabController.index = index;
-                    setState(() => _tabSelectedIndex = index);
-                  }
-                })
-              ])));
+          body: _buildContentView()));
 
   Widget _buildAppBar() => AppBar(
       centerTitle: true,
@@ -121,6 +112,20 @@ class _HomePageState extends State<HomePage>
         Text('数据来源：丁香园·丁香医生', style: TextStyle(fontSize: 8))
       ]),
       actions: [IconButton(onPressed: () {}, icon: Icon(Icons.share))]);
+
+  Widget _buildContentView() => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            _buildTabBarView(),
+            Divider(height: 1, color: Color(0xfff0f0f0)),
+            _buildTabBar((index) {
+              if (_tabSelectedIndex != index) {
+                _tabController.index = index;
+                setState(() => _tabSelectedIndex = index);
+              }
+            })
+          ]);
 
   Widget _buildTabBar(void onTabSelectedChanged(int index)) => Container(
       color: Colors.white,
@@ -199,36 +204,37 @@ class __EpidemicSituationInfoFragmentState
         builder: (_, data, __) => LoaderContainer(
             state: _loaderState,
             onReload: () => _getEpidemicSituationInfo(isFirstLoad: true),
-            contentView: data == null ? Container() : _buildContentView(data)));
+            contentView: _buildContentView(data)));
   }
 
-  Widget _buildContentView(EpidemicSituationInfoModel data) => RefreshIndicator(
-      onRefresh: () async => _getEpidemicSituationInfo(),
-      child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            EpidemicSituationStatisticsInfoView(
-                statisticsInfo: data.statisticsInfo,
-                locAreaSituationInfo: data.locProvinceName != null &&
-                        data?.areaSituationInfoList?.isNotEmpty == true
-                    ? data?.areaSituationInfoList?.singleWhere((e) =>
-                        data.locProvinceName.contains(e.provinceShortName))
-                    : null),
-            EpidemicSituationMapInfoView(
-                locProvinceName: data.locProvinceName,
-                situationInfo: data.data),
-            EpidemicSituationChartInfoView(
-                context: context, situationInfo: data.data),
-            EpidemicSituationForeignInfoView(
-                statisticsInfo: data.statisticsInfo,
-                locAreaSituationInfo: data.locProvinceName != null &&
-                        data?.areaSituationInfoList?.isNotEmpty == true
-                    ? data?.areaSituationInfoList?.singleWhere((e) =>
-                        data.locProvinceName.contains(e.provinceShortName))
-                    : null,
-                foreignSituationInfoList: data.foreignSituationInfoList)
-          ])));
+  Widget _buildContentView(EpidemicSituationInfoModel data) {
+    if (data?.data == null) return Container();
+    return RefreshIndicator(
+        onRefresh: () async => _getEpidemicSituationInfo(),
+        child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  EpidemicSituationStatisticsInfoView(
+                      statisticsInfo: data.statisticsInfo,
+                      locAreaSituationInfo: data.areaSituationInfoList
+                          .singleWhere(
+                              (e) =>
+                                  data.locProvinceName
+                                      ?.contains(e.provinceShortName) ==
+                                  true,
+                              orElse: () => null)),
+                  EpidemicSituationMapInfoView(
+                      locProvinceName: data.locProvinceName,
+                      situationInfo: data.data),
+                  EpidemicSituationChartInfoView(
+                      context: context, situationInfo: data.data),
+                  EpidemicSituationForeignInfoView(
+                      statisticsInfo: data.statisticsInfo,
+                      foreignSituationInfoList: data.foreignSituationInfoList)
+                ])));
+  }
 
   @override
   bool get wantKeepAlive => true;
@@ -276,7 +282,7 @@ class __EpidemicSituationTimelineInfoFragmentState
         builder: (_, data, __) => LoaderContainer(
             state: _loaderState,
             onReload: () => _getEpidemicSituationInfo(isFirstLoad: true),
-            contentView: data == null
+            contentView: data?.data == null
                 ? Container()
                 : RefreshIndicator(
                     onRefresh: () async => _getEpidemicSituationInfo(),

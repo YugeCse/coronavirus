@@ -1,4 +1,5 @@
 import 'package:coronavirus/core/widgets/china_province_view.dart';
+import 'package:coronavirus/core/widgets/map_view.dart';
 import 'package:coronavirus/core/widgets/rounded_button.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/area_situation_info.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/coronavirus_situation_info.dart';
@@ -28,9 +29,12 @@ class _EpidemicSituationMapInfoViewState
     {'text': '1-9', 'min': 1, 'max': 9, 'color': Colors.orange[100]},
   ];
 
-  ChinaProvinceViewController _controller;
+  // ChinaProvinceViewController _controller;
+  GlobalKey<MapViewState> _mapViewKey = GlobalKey();
   double _touchX = 0.0, _touchY = 0.0;
   AreaSituationInfo _selectedAreaSituationInfo;
+
+  void _initializer() {}
 
   Color _getAreaColorByConfirmedCount(int count) {
     var ret = _areaColorInfos.firstWhere((e) {
@@ -44,39 +48,61 @@ class _EpidemicSituationMapInfoViewState
     return Colors.transparent;
   }
 
-  void _onChinaProvinceViewCreated(ChinaProvinceViewController controller) {
-    _controller = controller
-      ..selectedBackgroundColor = Colors.blue.value
-      ..onProvinceSelectedChanged = (String value, double tx, double ty) {
-        setState(() {
-          _touchX = tx;
-          _touchY = ty;
-          _selectedAreaSituationInfo = value == null || value.isEmpty
-              ? null
-              : widget.situationInfo.areaSituationInfoList.firstWhere(
-                  (element) => element.provinceShortName.contains(value));
-        });
-      };
-    var areaColorInfoParams = Map<String, dynamic>();
+  @override
+  void didUpdateWidget(EpidemicSituationMapInfoView oldWidget) {
+    var areaColorInfoParams = Map<String, Color>();
     widget.situationInfo.areaSituationInfoList.forEach((e) =>
         areaColorInfoParams[e.provinceShortName] =
-            _getAreaColorByConfirmedCount(e.confirmed).value);
-    _controller.provincesBackgroundColors = areaColorInfoParams;
-    Future.delayed(const Duration(seconds: 1),
-        () => _controller.selectedProvinceByName = widget.locProvinceName);
+            _getAreaColorByConfirmedCount(e.confirmed));
+    _mapViewKey?.currentState?.setProvincesColors(areaColorInfoParams);
+    super.didUpdateWidget(oldWidget);
+  }
+
+  // void _onChinaProvinceViewCreated(ChinaProvinceViewController controller) {
+  //   _controller = controller
+  //     ..selectedBackgroundColor = Colors.blue.value
+  //     ..onProvinceSelectedChanged = (String value, double tx, double ty) {
+  //       setState(() {
+  //         _touchX = tx;
+  //         _touchY = ty;
+  //         _selectedAreaSituationInfo = value == null || value.isEmpty
+  //             ? null
+  //             : widget.situationInfo.areaSituationInfoList.firstWhere(
+  //                 (element) => element.provinceShortName.contains(value));
+  //       });
+  //     };
+  //   var areaColorInfoParams = Map<String, dynamic>();
+  //   widget.situationInfo.areaSituationInfoList.forEach((e) =>
+  //       areaColorInfoParams[e.provinceShortName] =
+  //           _getAreaColorByConfirmedCount(e.confirmed).value);
+  //   _controller.provincesBackgroundColors = areaColorInfoParams;
+  //   Future.delayed(const Duration(seconds: 1),
+  //       () => _controller.selectedProvinceByName = widget.locProvinceName);
+  // }
+
+  @override
+  void initState() {
+    _initializer();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) => Stack(children: [
         Container(
-            margin: EdgeInsets.only(left: 8, right: 8),
-            padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-                color: Colors.white),
-            child: ChinaProvinceView(
+          margin: EdgeInsets.only(left: 8, right: 8),
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+              color: Colors.white),
+          child: MapView(
+              key: _mapViewKey,
+              vectorAssetName: 'assets/vectors/ic_map_china.xml',
+              width: MediaQuery.of(context).size.width - 32,
+              selectedBackgroundColor: Colors.blue),
+          /* ChinaProvinceView(
                 width: MediaQuery.of(context).size.width - 32,
-                onViewCreated: _onChinaProvinceViewCreated)),
+                onViewCreated: _onChinaProvinceViewCreated) */
+        ),
         Positioned(
             left: 16,
             top: 8,
@@ -131,9 +157,9 @@ class _EpidemicSituationMapInfoViewState
             style: TextStyle(fontSize: 11, color: Colors.white)),
       ]));
 
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _controller?.dispose();
+  //   super.dispose();
+  // }
 }
