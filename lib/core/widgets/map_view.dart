@@ -3,24 +3,34 @@ import 'package:coronavirus/utils/graphics/path_parser.dart';
 import 'package:flutter/material.dart';
 import 'package:xml/xml.dart' as Xml;
 
+typedef void OnSelectedAreaChanged(AreaInfo info, double mapScale);
+
 class MapView extends StatefulWidget {
   MapView({
     Key key,
-    @required this.vectorAssetName,
+    @required this.mapInfo,
     @required this.width,
     @required this.selectedBackgroundColor,
-  })  : assert(vectorAssetName != null),
+    this.backgroundRenderParams,
+    this.onSelectedAreaChanged,
+  })  : assert(mapInfo != null),
         assert(width != null && width > 0),
         super(key: key);
 
-  /// Vector资源路径名称
-  final String vectorAssetName;
+  /// 地图数据
+  final MapInfo mapInfo;
 
   /// 地图宽度，高度根据高度自动缩放
   final double width;
 
   /// 被选中的颜色
   final Color selectedBackgroundColor;
+
+  ///地图渲染参数
+  final Map<String, Color> backgroundRenderParams;
+
+  ///选择的地区变化的事件
+  final OnSelectedAreaChanged onSelectedAreaChanged;
 
   @override
   MapViewState createState() => MapViewState();
@@ -30,26 +40,36 @@ class MapViewState extends State<MapView> {
   double _mapScale = 1.0; //地图缩放率
   double _mapRatio; //地图W/H比例
   MapInfo _mapInfo; //地图信息
-  Map<String, Color> _backgroundRenderParams; //地图渲染参数
 
   void _initializer() {
-    Future.microtask(() async {
-      var result = await _parseVectorXmlAsset(context, widget.vectorAssetName);
-      setState(() {
-        _mapScale = widget.width / result.width;
-        _mapRatio = result.width / result.height;
-        _mapInfo = result
-          ..areaInfoList.forEach((e) {
-            if (_backgroundRenderParams?.containsKey(e.name) == true)
-              e.backgroundColor = _backgroundRenderParams[e.name];
-            e.selectedBackgroundColor = widget.selectedBackgroundColor;
-          });
-      });
+    _mapInfo = widget.mapInfo;
+    _mapScale = widget.width / _mapInfo.width;
+    _mapRatio = _mapInfo.width / _mapInfo.height;
+    _mapInfo.areaInfoList.forEach((e) {
+      if (widget.backgroundRenderParams?.containsKey(e.name) == true)
+        e.backgroundColor = widget.backgroundRenderParams[e.name];
+      e.selectedBackgroundColor = widget.selectedBackgroundColor;
     });
   }
 
-  void setProvincesColors(Map<String, Color> params) =>
-      _backgroundRenderParams = params;
+  void _onMapViewClick(TapDownDetails details) {
+    AreaInfo originalselectedAreaInfo, currentSelectedAreaInfo;
+    _mapInfo?.areaInfoList?.forEach((e) {
+      if (e.isSelected) originalselectedAreaInfo = e;
+      if (e.isTouched(Offset(details.localPosition.dx / _mapScale,
+          details.localPosition.dy / _mapScale))) {
+        currentSelectedAreaInfo = e;
+        e.isSelected = true;
+      }
+    });
+    if (originalselectedAreaInfo != currentSelectedAreaInfo) {
+      originalselectedAreaInfo?.isSelected = false;
+      currentSelectedAreaInfo?.isSelected = true;
+      if (widget.onSelectedAreaChanged != null)
+        widget.onSelectedAreaChanged(currentSelectedAreaInfo, _mapScale);
+    }
+    setState(() {});
+  }
 
   @override
   void initState() {
@@ -59,22 +79,19 @@ class MapViewState extends State<MapView> {
 
   @override
   void didUpdateWidget(MapView oldWidget) {
-    _mapInfo?.areaInfoList?.forEach((e) {
-      if (_backgroundRenderParams?.containsKey(e.name) == true)
-        e.backgroundColor = _backgroundRenderParams[e.name];
-      e.selectedBackgroundColor = widget.selectedBackgroundColor;
-    });
+    if (oldWidget.backgroundRenderParams != widget.backgroundRenderParams) {
+      _mapInfo.areaInfoList.forEach((e) {
+        if (widget.backgroundRenderParams?.containsKey(e.name) == true)
+          e.backgroundColor = widget.backgroundRenderParams[e.name];
+        e.selectedBackgroundColor = widget.selectedBackgroundColor;
+      });
+    }
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-      onTapDown: (details) {
-        _mapInfo?.areaInfoList?.forEach((e) => e.isSelected = e.isTouched(
-            Offset(details.localPosition.dx / _mapScale,
-                details.localPosition.dy / _mapScale)));
-        setState(() {});
-      },
+      onTapDown: (details) => _onMapViewClick(details),
       child: _mapInfo == null ? Container() : _buildContentView());
 
   Widget _buildContentView() => CustomPaint(
@@ -210,20 +227,40 @@ class AreaInfo {
         break;
       case '河北':
         x = bounds.left + 8;
-        y = bounds.bottom - bounds.height * 0.4;
+        y = bounds.bottom - bounds.height * 0.45;
         break;
       case '北京':
-        y = bounds.top - paragraph.height + 5;
+        y -= 25;
         break;
       case '天津':
         x = bounds.right;
+        break;
+      case '黑龙江':
+        y = bounds.bottom - bounds.height * 0.45;
+        break;
+      case '山西':
+        x -= 10;
+        break;
+      case '江西':
+      case '山东':
+        x -= 25;
+        break;
+      case '福建':
+        x -= 15;
+        break;
+      case '辽宁':
+        y -= 18;
+        break;
+      case '云南':
+        y += 18;
         break;
     }
     return Offset(x, y);
   }
 }
 
-Future<MapInfo> _parseVectorXmlAsset(
+/// 通过Vector资源获取地图数据
+Future<MapInfo> getMapInfoByVectorXmlAsset(
     BuildContext context, String assetName) async {
   MapInfo mapInfo = MapInfo();
   String assetContent =

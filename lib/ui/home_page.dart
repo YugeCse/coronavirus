@@ -1,6 +1,7 @@
 import 'package:coronavirus/api/http/http_api_repositories.dart';
 import 'package:coronavirus/core/plugins/geo_location.dart';
 import 'package:coronavirus/core/widgets/loader_container/loader_container.dart';
+import 'package:coronavirus/core/widgets/map_view.dart';
 import 'package:coronavirus/core/widgets/rounded_button.dart';
 import 'package:coronavirus/data/models/epidemic_situation_info_model.dart';
 import 'package:coronavirus/ui/component/epidemic_situation_chart_info_view.dart';
@@ -107,7 +108,7 @@ class _HomePageState extends State<HomePage>
   Widget _buildAppBar() => AppBar(
       centerTitle: true,
       title: Column(children: [
-        Text('全国疫情状况',
+        Text('冠状病毒(NCP)疫情信息',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         Text('数据来源：丁香园·丁香医生', style: TextStyle(fontSize: 8))
       ]),
@@ -134,7 +135,7 @@ class _HomePageState extends State<HomePage>
           Expanded(
               child: RoundedButton(
                   onPressed: () => onTabSelectedChanged(i),
-                  isMaterialEnabled: false,
+                  borderRadius: BorderRadius.zero,
                   padding: EdgeInsets.symmetric(vertical: 5),
                   child: Column(children: [
                     Icon(_tabItemSources[i]['icon'],
@@ -178,8 +179,11 @@ class __EpidemicSituationInfoFragmentState
     extends State<_EpidemicSituationInfoFragment>
     with AutomaticKeepAliveClientMixin {
   LoaderState _loaderState = LoaderState.Loading;
+  MapInfo _mapInfo; //地图数据
 
-  void initializer() {
+  void initializer() async {
+    _mapInfo = await getMapInfoByVectorXmlAsset(
+        context, 'assets/vectors/ic_map_china.xml');
     Future.microtask(() => _getEpidemicSituationInfo(isFirstLoad: true));
   }
 
@@ -226,6 +230,7 @@ class __EpidemicSituationInfoFragmentState
                                   true,
                               orElse: () => null)),
                   EpidemicSituationMapInfoView(
+                      mapInfo: _mapInfo,
                       locProvinceName: data.locProvinceName,
                       situationInfo: data.data),
                   EpidemicSituationChartInfoView(

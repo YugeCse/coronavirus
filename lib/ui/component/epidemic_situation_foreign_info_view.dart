@@ -1,3 +1,4 @@
+import 'package:coronavirus/core/widgets/rounded_button.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/foreign_situation_info.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/situation_statistics_info.dart';
 import 'package:coronavirus/utils/time/datetime_util.dart';
@@ -29,7 +30,14 @@ class _EpidemicSituationForeignInfoViewState
   ];
 
   final typeConfirmed = 1, typeSuspected = 2, typedCured = 3, typeDead = 4;
-  bool _isCitySituationInfoExpanded = true;
+  bool _isMoreSituationInfoExpanded = true;
+
+  @override
+  void didUpdateWidget(EpidemicSituationForeignInfoView oldWidget) {
+    if (oldWidget.foreignSituationInfoList != widget.foreignSituationInfoList)
+      _isMoreSituationInfoExpanded = true;
+    super.didUpdateWidget(oldWidget);
+  }
 
   @override
   Widget build(BuildContext context) => Container(
@@ -74,38 +82,47 @@ class _EpidemicSituationForeignInfoViewState
               .toList()));
 
   Widget _buildAreaNameRowItemView(String name,
-      {double textSize = 14, Color textColor, bool hasCities = false}) {
-    var nameWidget = Text(name,
-        textAlign: TextAlign.start,
-        style: TextStyle(
-            fontSize: textSize, fontWeight: FontWeight.bold, color: textColor));
-    var retWidget = !hasCities
-        ? nameWidget
-        : Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            nameWidget,
-            Padding(
-                padding: EdgeInsets.only(top: 3),
-                child: Icon(
-                    hasCities && !_isCitySituationInfoExpanded
-                        ? Icons.arrow_drop_up
-                        : Icons.arrow_drop_down,
-                    size: 15))
-          ]);
-    return Expanded(flex: 2, child: retWidget);
-  }
+          {double textSize = 14, Color textColor}) =>
+      Expanded(
+          flex: 2,
+          child: Text(name,
+              textAlign: TextAlign.start,
+              style: TextStyle(
+                  fontSize: textSize,
+                  fontWeight: FontWeight.bold,
+                  color: textColor)));
 
-  List<Widget> _buildEpidemicSituationStatisticsInfoViews() => widget
-      .foreignSituationInfoList
-      .map((e) => Padding(
-          padding: EdgeInsets.all(8),
-          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            _buildAreaNameRowItemView(e.name),
-            _buildItemView(typeConfirmed, 3, e.confirmed),
-            _buildItemView(typeSuspected, 3, e.suspected),
-            _buildItemView(typedCured, 2, e.cured),
-            _buildItemView(typeDead, 2, e.dead),
-          ])))
-      .toList();
+  List<Widget> _buildEpidemicSituationStatisticsInfoViews() => [
+        ...widget.foreignSituationInfoList
+            .take(_isMoreSituationInfoExpanded
+                ? 5
+                : widget.foreignSituationInfoList.length)
+            .map((e) => Padding(
+                padding: EdgeInsets.all(8),
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _buildAreaNameRowItemView(e.name),
+                      _buildItemView(typeConfirmed, 3, e.confirmed),
+                      _buildItemView(typeSuspected, 3, e.suspected),
+                      _buildItemView(typedCured, 2, e.cured),
+                      _buildItemView(typeDead, 2, e.dead),
+                    ])))
+            .toList(),
+        if (_isMoreSituationInfoExpanded == true)
+          RoundedButton(
+              onPressed: () =>
+                  setState(() => _isMoreSituationInfoExpanded = false),
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('点击查看更多',
+                        style: TextStyle(fontSize: 13, color: Colors.grey)),
+                    Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 12)
+                  ]))
+      ];
 
   Widget _buildItemView(int type, int flex, int value,
           {int incrValue, bool isCityData}) =>
