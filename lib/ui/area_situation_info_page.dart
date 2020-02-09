@@ -69,8 +69,7 @@ class _AreaSituationInfoPageState extends State<AreaSituationInfoPage> {
         Divider(height: 1, color: Color(0xfff0f0f0)),
         _buildTableHeaderView(),
         Divider(height: 1, color: Color(0xfff0f0f0)),
-        _buildAreaEpidemicStuationStatisticsInfoView(),
-        Divider(height: 1, color: Color(0xfff0f0f0))
+        _buildAreaEpidemicStuationStatisticsInfoView()
       ]));
 
   Widget _buildTitleBarView() =>
