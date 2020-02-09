@@ -2,6 +2,7 @@ import 'package:coronavirus/core/widgets/map_view.dart';
 import 'package:coronavirus/core/widgets/rounded_button.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/area_situation_info.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/coronavirus_situation_info.dart';
+import 'package:coronavirus/ui/area_situation_info_page.dart';
 import 'package:flutter/material.dart';
 
 /// 行政区域的疫情情况视图
@@ -42,9 +43,10 @@ class _EpidemicSituationMapInfoViewState
 
   Map<String, Color> _getMapAreaBackgroundRenderParams() {
     var renderParams = Map<String, Color>();
-    widget.situationInfo.areaSituationInfoList.forEach((e) =>
-        renderParams[e.provinceShortName] =
-            _getAreaColorByConfirmedCount(e.confirmed));
+    widget.situationInfo.areaSituationInfoList.forEach((e) {
+      renderParams[e.provinceShortName] =
+          _getAreaColorByConfirmedCount(e.confirmed);
+    });
     return renderParams;
   }
 
@@ -142,7 +144,10 @@ class _EpidemicSituationMapInfoViewState
           .toList());
 
   Widget _buildAreaInfoPopView() => RoundedButton(
-      onPressed: () {},
+      onPressed: () => showDialog(
+          context: context,
+          child: AreaSituationInfoPage(
+              areaSituationInfo: _selectedAreaSituationInfo)),
       padding: EdgeInsets.all(5),
       color: const Color(0xb8000000),
       borderRadius: BorderRadius.circular(5),
