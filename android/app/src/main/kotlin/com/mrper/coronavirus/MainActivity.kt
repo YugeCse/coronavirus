@@ -1,5 +1,7 @@
 package com.mrper.coronavirus
 
+import android.graphics.Color
+import android.os.Bundle
 import androidx.annotation.NonNull;
 import com.mrper.coronavirus.core.flutter.plugins.LocationFlutterPlugin
 import com.mrper.coronavirus.core.flutter.plugins.LogFlutterPlugin

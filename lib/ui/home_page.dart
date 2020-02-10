@@ -1,20 +1,16 @@
 import 'package:coronavirus/api/http/http_api_repositories.dart';
 import 'package:coronavirus/core/plugins/geo_location.dart';
-import 'package:coronavirus/core/widgets/loader_container/loader_container.dart';
-import 'package:coronavirus/core/widgets/map_view.dart';
 import 'package:coronavirus/core/widgets/rounded_button.dart';
 import 'package:coronavirus/data/models/epidemic_situation_info_model.dart';
-import 'package:coronavirus/ui/component/epidemic_situation_chart_info_view.dart';
-import 'package:coronavirus/ui/component/epidemic_situation_foreign_info_view.dart';
-import 'package:coronavirus/ui/component/epidemic_situation_map_info_view.dart';
-import 'package:coronavirus/ui/component/epidemic_situation_statistics_info_view.dart';
-import 'package:coronavirus/ui/component/epidemic_situation_timeline_info_view.dart';
+import 'package:coronavirus/ui/home/epidemic_situation_info_fragment.dart';
+import 'package:coronavirus/ui/home/epidemic_situation_knowledge_info_fragment.dart';
+import 'package:coronavirus/ui/home/epidemic_situation_timeline_info_fragment.dart';
 import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
-typedef Future<bool> _GetEpidemicSituationInfo({bool isFirstLoad});
+typedef Future<bool> OnGetEpidemicSituationInfo({bool isFirstLoad});
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -26,8 +22,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   final _tabItemSources = [
-    {'text': '疫情信息', 'icon': Icons.bug_report},
-    {'text': '实时播报', 'icon': Icons.message}
+    {'text': '疫情信息', 'icon': 'assets/images/ic_virus.png'},
+    {'text': '实时讯息', 'icon': 'assets/images/ic_news.png'},
+    {'text': '常识知识', 'icon': 'assets/images/ic_knowledge.png'},
   ];
 
   TabController _tabController;
@@ -52,7 +49,7 @@ class _HomePageState extends State<HomePage>
   /// 初始化
   void _initializer() async {
     _tabSelectedIndex = 0; //默认tab选中的索引为0
-    _tabController = TabController(initialIndex: 0, length: 2, vsync: this);
+    _tabController = TabController(initialIndex: 0, length: 3, vsync: this);
     await _requestAppPermission(); //请求应用权限
   }
 
@@ -66,7 +63,7 @@ class _HomePageState extends State<HomePage>
     }
   }
 
-  Future<bool> getEpidemicSituationInfo({bool isFirstLoad = false}) async {
+  Future<bool> _getEpidemicSituationInfo({bool isFirstLoad = false}) async {
     var ret = await HttpApiRepositories.getCoronavirusSituationInfo();
     if (ret?.code == 0 && ret?.dataInfo != null) {
       _epidemicSituationInfo.data = ret.dataInfo;
@@ -108,7 +105,7 @@ class _HomePageState extends State<HomePage>
   Widget _buildAppBar() => AppBar(
       centerTitle: true,
       title: Column(children: [
-        Text('冠状病毒(NCP)疫情信息',
+        Text('冠状病毒(NCP)疫况',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         Text('数据来源：丁香园·丁香医生', style: TextStyle(fontSize: 8))
       ]),
@@ -138,8 +135,9 @@ class _HomePageState extends State<HomePage>
                   borderRadius: BorderRadius.zero,
                   padding: EdgeInsets.symmetric(vertical: 5),
                   child: Column(children: [
-                    Icon(_tabItemSources[i]['icon'],
-                        size: 26,
+                    Image.asset(_tabItemSources[i]['icon'],
+                        width: 26,
+                        height: 26,
                         color: i == _tabSelectedIndex
                             ? Theme.of(context).primaryColor
                             : Colors.grey),
@@ -156,147 +154,11 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildTabBarView() => Expanded(
           child: TabBarView(controller: _tabController, children: [
-        _EpidemicSituationInfoFragment(
-            getEpidemicSituationInfo: getEpidemicSituationInfo),
-        _EpidemicSituationTimelineInfoFragment(
-            getEpidemicSituationInfo: getEpidemicSituationInfo)
+        EpidemicSituationInfoFragment(
+            getEpidemicSituationInfo: _getEpidemicSituationInfo),
+        EpidemicSituationTimelineInfoFragment(
+            getEpidemicSituationInfo: _getEpidemicSituationInfo),
+        EpidemicSituationKnowledgeInfoFragment(
+            getEpidemicSituationInfo: _getEpidemicSituationInfo)
       ]));
-}
-
-class _EpidemicSituationInfoFragment extends StatefulWidget {
-  _EpidemicSituationInfoFragment(
-      {Key key, @required this.getEpidemicSituationInfo})
-      : super(key: key);
-
-  final _GetEpidemicSituationInfo getEpidemicSituationInfo;
-
-  @override
-  __EpidemicSituationInfoFragmentState createState() =>
-      __EpidemicSituationInfoFragmentState();
-}
-
-class __EpidemicSituationInfoFragmentState
-    extends State<_EpidemicSituationInfoFragment>
-    with AutomaticKeepAliveClientMixin {
-  LoaderState _loaderState = LoaderState.Loading;
-  MapInfo _mapInfo; //地图数据
-
-  void initializer() async {
-    _mapInfo = await getMapInfoByVectorXmlAsset(
-        context, 'assets/vectors/ic_map_china.xml');
-    Future.microtask(() => _getEpidemicSituationInfo(isFirstLoad: true));
-  }
-
-  void _getEpidemicSituationInfo({bool isFirstLoad}) async {
-    if (isFirstLoad == true) setState(() => _loaderState = LoaderState.Loading);
-    bool isSuccessful =
-        await widget.getEpidemicSituationInfo(isFirstLoad: isFirstLoad);
-    setState(() =>
-        _loaderState = isSuccessful ? LoaderState.Succeed : LoaderState.Error);
-  }
-
-  @override
-  void initState() {
-    initializer();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return Consumer<EpidemicSituationInfoModel>(
-        builder: (_, data, __) => LoaderContainer(
-            state: _loaderState,
-            onReload: () => _getEpidemicSituationInfo(isFirstLoad: true),
-            contentView: _buildContentView(data)));
-  }
-
-  Widget _buildContentView(EpidemicSituationInfoModel data) {
-    if (data?.data == null) return Container();
-    return RefreshIndicator(
-        onRefresh: () async => _getEpidemicSituationInfo(),
-        child: SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  EpidemicSituationStatisticsInfoView(
-                      statisticsInfo: data.statisticsInfo,
-                      locAreaSituationInfo: data.areaSituationInfoList
-                          .singleWhere(
-                              (e) =>
-                                  data.locProvinceName
-                                      ?.contains(e.provinceShortName) ==
-                                  true,
-                              orElse: () => null)),
-                  EpidemicSituationMapInfoView(
-                      mapInfo: _mapInfo,
-                      locProvinceName: data.locProvinceName,
-                      situationInfo: data.data),
-                  EpidemicSituationChartInfoView(
-                      context: context, situationInfo: data.data),
-                  EpidemicSituationForeignInfoView(
-                      statisticsInfo: data.statisticsInfo,
-                      foreignSituationInfoList: data.foreignSituationInfoList)
-                ])));
-  }
-
-  @override
-  bool get wantKeepAlive => true;
-}
-
-class _EpidemicSituationTimelineInfoFragment extends StatefulWidget {
-  _EpidemicSituationTimelineInfoFragment(
-      {Key key, @required this.getEpidemicSituationInfo})
-      : super(key: key);
-
-  final _GetEpidemicSituationInfo getEpidemicSituationInfo;
-
-  @override
-  __EpidemicSituationTimelineInfoFragmentState createState() =>
-      __EpidemicSituationTimelineInfoFragmentState();
-}
-
-class __EpidemicSituationTimelineInfoFragmentState
-    extends State<_EpidemicSituationTimelineInfoFragment>
-    with AutomaticKeepAliveClientMixin {
-  LoaderState _loaderState = LoaderState.Loading;
-
-  void initializer() {
-    Future.microtask(() => _getEpidemicSituationInfo(isFirstLoad: true));
-  }
-
-  void _getEpidemicSituationInfo({bool isFirstLoad}) async {
-    if (isFirstLoad == true) setState(() => _loaderState = LoaderState.Loading);
-    bool isSuccessful =
-        await widget.getEpidemicSituationInfo(isFirstLoad: isFirstLoad);
-    setState(() =>
-        _loaderState = isSuccessful ? LoaderState.Succeed : LoaderState.Error);
-  }
-
-  @override
-  void initState() {
-    initializer();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return Consumer<EpidemicSituationInfoModel>(
-        builder: (_, data, __) => LoaderContainer(
-            state: _loaderState,
-            onReload: () => _getEpidemicSituationInfo(isFirstLoad: true),
-            contentView: data?.data == null
-                ? Container()
-                : RefreshIndicator(
-                    onRefresh: () async => _getEpidemicSituationInfo(),
-                    child: SingleChildScrollView(
-                        physics: AlwaysScrollableScrollPhysics(),
-                        child: EpidemicSituationTimelineInfoView(
-                            situationInfo: data.data)))));
-  }
-
-  @override
-  bool get wantKeepAlive => true;
 }

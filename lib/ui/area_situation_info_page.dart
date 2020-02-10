@@ -1,4 +1,5 @@
 import 'package:coronavirus/data/entities/epidemic_situation/area_situation_info.dart';
+import 'package:coronavirus/data/enums/human_state_type.dart';
 import 'package:flutter/material.dart';
 
 class AreaSituationInfoPage extends StatefulWidget {
@@ -22,8 +23,6 @@ class _AreaSituationInfoPageState extends State<AreaSituationInfoPage> {
     {'name': '死亡', 'flex': 2},
   ];
 
-  final typeConfirmed = 1, typeSuspected = 2, typedCured = 3, typeDead = 4;
-
   @override
   Widget build(BuildContext context) => Material(
       type: MaterialType.transparency,
@@ -34,30 +33,34 @@ class _AreaSituationInfoPageState extends State<AreaSituationInfoPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildHangingContainerView(),
-              ConstrainedBox(
+              Container(
                   constraints: BoxConstraints(
                       maxHeight: (MediaQuery.of(context).size.height -
                               kToolbarHeight -
                               kBottomNavigationBarHeight) *
                           0.75),
                   child: SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.max,
-                          children: [_buildContentView()]))),
+                          children: _buildContentView())))
             ])
       ]));
 
-  Widget _buildContentView() => Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        _buildAreaEpidemicSituationCitiesInfoView(),
-      ]));
+  List<Widget> _buildContentView() => [
+        Container(
+            alignment: Alignment.center,
+            color: Colors.white,
+            child: _buildAreaEpidemicSituationCitiesInfoView()),
+        Container(
+            height: 8,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(5))))
+      ];
 
   Widget _buildHangingContainerView() => Container(
       margin: EdgeInsets.symmetric(horizontal: 20),
@@ -66,10 +69,14 @@ class _AreaSituationInfoPageState extends State<AreaSituationInfoPage> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(5))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         _buildTitleBarView(),
-        Divider(height: 1, color: Color(0xfff0f0f0)),
         _buildTableHeaderView(),
-        Divider(height: 1, color: Color(0xfff0f0f0)),
-        _buildAreaEpidemicStuationStatisticsInfoView()
+        _buildAreaEpidemicStuationRowItemView(
+            widget.areaSituationInfo.provinceShortName,
+            widget.areaSituationInfo.confirmed,
+            widget.areaSituationInfo.suspected,
+            widget.areaSituationInfo.cured,
+            widget.areaSituationInfo.dead,
+            isProvince: true),
       ]));
 
   Widget _buildTitleBarView() =>
@@ -100,40 +107,37 @@ class _AreaSituationInfoPageState extends State<AreaSituationInfoPage> {
                           fontSize: 15, fontWeight: FontWeight.bold))))
               .toList()));
 
-  Widget _buildAreaEpidemicStuationStatisticsInfoView() => Padding(
-      padding: EdgeInsets.all(8),
-      child: Row(children: [
-        _buildAreaNameRowItemView(
-            widget.areaSituationInfo?.provinceShortName ?? ''),
-        _buildItemView(typeConfirmed, 3, widget.areaSituationInfo.confirmed),
-        _buildItemView(typeSuspected, 3, widget.areaSituationInfo.suspected),
-        _buildItemView(typedCured, 2, widget.areaSituationInfo.cured),
-        _buildItemView(typeDead, 2, widget.areaSituationInfo.dead),
-      ]));
-
   Widget _buildAreaEpidemicSituationCitiesInfoView() =>
       widget.areaSituationInfo?.cityInfoList?.isNotEmpty == true
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: widget.areaSituationInfo.cityInfoList
-                  .map((itemInfo) => Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Row(children: [
-                        _buildAreaNameRowItemView(itemInfo.cityName ?? '',
-                            textSize: 13, textColor: Colors.grey[500]),
-                        _buildItemView(typeConfirmed, 3, itemInfo.confirmed,
-                            isCityData: true),
-                        _buildItemView(typeSuspected, 3, itemInfo.suspected,
-                            isCityData: true),
-                        _buildItemView(typedCured, 2, itemInfo.cured,
-                            isCityData: true),
-                        _buildItemView(typeDead, 2, itemInfo.dead,
-                            isCityData: true),
-                      ])))
+                  .map((itemInfo) => _buildAreaEpidemicStuationRowItemView(
+                      itemInfo.cityName,
+                      itemInfo.confirmed,
+                      itemInfo.suspected,
+                      itemInfo.cured,
+                      itemInfo.dead,
+                      isProvince: false))
                   .toList())
           : Container();
 
-  Widget _buildAreaNameRowItemView(String name,
+  Widget _buildAreaEpidemicStuationRowItemView(
+          String cityName, int confirmed, int suspected, int cured, int dead,
+          {bool isProvince = true}) =>
+      Padding(
+          padding: EdgeInsets.all(8),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            _buildAreaNameColumnItemView(cityName,
+                textSize: isProvince ? 14 : 13,
+                textColor: isProvince ? Colors.black : Colors.grey[500]),
+            _buildColumnItemView(HumanStateType.Confirmed, 3, confirmed),
+            _buildColumnItemView(HumanStateType.Suspected, 3, suspected),
+            _buildColumnItemView(HumanStateType.Cured, 2, cured),
+            _buildColumnItemView(HumanStateType.Dead, 2, dead),
+          ]));
+
+  Widget _buildAreaNameColumnItemView(String name,
           {double textSize = 14, Color textColor}) =>
       Expanded(
           flex: 2,
@@ -144,20 +148,23 @@ class _AreaSituationInfoPageState extends State<AreaSituationInfoPage> {
                   fontWeight: FontWeight.bold,
                   color: textColor)));
 
-  Widget _buildItemView(int type, int flex, int value,
+  Widget _buildColumnItemView(HumanStateType type, int flex, int value,
           {int incrValue, bool isCityData}) =>
       Expanded(
           flex: flex,
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Text(type == typeSuspected && value == 0 ? '---' : value.toString(),
+            Text(
+                type == HumanStateType.Suspected && value == 0
+                    ? '---'
+                    : value.toString(),
                 style: TextStyle(
                     fontSize: 16,
-                    color: type == typeConfirmed
+                    color: type == HumanStateType.Confirmed
                         ? Colors.red[800]
-                        : (type == typeSuspected
+                        : (type == HumanStateType.Suspected
                             ? Colors.yellow[800]
-                            : (type == typedCured
+                            : (type == HumanStateType.Cured
                                 ? Colors.green[800]
                                 : Colors.black)))),
             if (incrValue != null)
@@ -165,7 +172,7 @@ class _AreaSituationInfoPageState extends State<AreaSituationInfoPage> {
                   margin: EdgeInsets.only(top: 3),
                   padding: EdgeInsets.symmetric(vertical: 3, horizontal: 5),
                   decoration: BoxDecoration(
-                      color: type == typeConfirmed
+                      color: type == HumanStateType.Confirmed
                           ? Colors.red[100]
                           : Colors.grey[100],
                       borderRadius: BorderRadius.all(Radius.circular(3))),

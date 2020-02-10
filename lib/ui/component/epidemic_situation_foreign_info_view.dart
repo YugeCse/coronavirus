@@ -114,13 +114,17 @@ class _EpidemicSituationForeignInfoViewState
               onPressed: () =>
                   setState(() => _isMoreSituationInfoExpanded = false),
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              margin: EdgeInsets.symmetric(horizontal: 8),
               child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('点击查看更多',
                         style: TextStyle(fontSize: 13, color: Colors.grey)),
-                    Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 12)
+                    Padding(
+                        padding: EdgeInsets.only(top: 3),
+                        child:
+                            Icon(Icons.keyboard_arrow_down, color: Colors.grey))
                   ]))
       ];
 

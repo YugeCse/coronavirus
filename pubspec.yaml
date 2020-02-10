@@ -23,6 +23,7 @@ dependencies:
   xml: ^3.5.0
   dio: ^3.0.8
   oktoast: ^2.3.0
+  flare_flutter: ^2.0.1
   webview_flutter: ^0.3.19+5
   cached_network_image: ^2.0.0
   provider: ^4.0.3
@@ -49,6 +50,7 @@ flutter:
   assets:
     - assets/images/
     - assets/vectors/
+    - assets/flares/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

@@ -3,8 +3,10 @@ import 'package:coronavirus/utils/graphics/path_parser.dart';
 import 'package:flutter/material.dart';
 import 'package:xml/xml.dart' as Xml;
 
+/// 地图区域选择变化事件
 typedef void OnSelectedAreaChanged(AreaInfo info, double mapScale);
 
+/// 地图视图
 class MapView extends StatefulWidget {
   MapView({
     Key key,

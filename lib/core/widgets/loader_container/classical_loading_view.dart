@@ -1,3 +1,4 @@
+import 'package:flare_flutter/flare_actor.dart';
 import 'package:flutter/material.dart';
 
 /// 经典的加载视图
@@ -21,10 +22,18 @@ class ClassicalLoadingView extends StatelessWidget {
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-            CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation(
-                    progressIndicatorColor ?? Theme.of(context).accentColor)),
+              children: [
+            SizedBox(
+                width: 80,
+                height: 80,
+                child: FlareActor('assets/flares/virus.flr',
+                    alignment: Alignment.center,
+                    fit: BoxFit.contain,
+                    color: Colors.red,
+                    animation: 'virus_rotate')),
+            // CircularProgressIndicator(
+            //     valueColor: AlwaysStoppedAnimation(
+            //         progressIndicatorColor ?? Theme.of(context).accentColor)),
             Padding(
                 padding: const EdgeInsets.only(top: 35),
                 child: Text(progressText,

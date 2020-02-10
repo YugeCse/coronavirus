@@ -1,5 +1,6 @@
 import 'package:coronavirus/data/entities/epidemic_situation/area_situation_info.dart';
 import 'package:coronavirus/data/entities/epidemic_situation/situation_statistics_info.dart';
+import 'package:coronavirus/data/enums/human_state_type.dart';
 import 'package:coronavirus/utils/time/datetime_util.dart';
 import 'package:flutter/material.dart';
 
@@ -28,7 +29,6 @@ class _EpidemicSituationStatisticsInfoViewState
     {'name': '死亡', 'flex': 2},
   ];
 
-  final typeConfirmed = 1, typeSuspected = 2, typedCured = 3, typeDead = 4;
   bool _isCitySituationInfoExpanded = true;
 
   @override
@@ -44,7 +44,8 @@ class _EpidemicSituationStatisticsInfoViewState
         _buildTableHeaderView(),
         _buildEpidemicSituationStatisticsInfoView(),
         if (widget.locAreaSituationInfo != null)
-          _buildLocAreaEpidemicSituationInfoView()
+          _buildLocAreaEpidemicSituationInfoView(),
+        _buildFooterView()
       ]));
 
   Widget _buildTitleView() => Padding(
@@ -75,7 +76,78 @@ class _EpidemicSituationStatisticsInfoViewState
                           fontSize: 15, fontWeight: FontWeight.bold))))
               .toList()));
 
-  Widget _buildAreaNameRowItemView(String name,
+  Widget _buildEpidemicSituationStatisticsInfoView() =>
+      _buildAreaEpidemicStuationRowItemView(
+          '全国',
+          widget.statisticsInfo.confirmedCount,
+          widget.statisticsInfo.suspectedCount,
+          widget.statisticsInfo.curedCount,
+          widget.statisticsInfo.deadCount,
+          confirmedIncr: widget.statisticsInfo.confirmedIncr,
+          suspectedIncr: widget.statisticsInfo.suspectedIncr,
+          curedIncr: widget.statisticsInfo.curedIncr,
+          deadIncr: widget.statisticsInfo.deadIncr,
+          isProvince: true,
+          hasCities: false);
+
+  Widget _buildLocAreaEpidemicSituationInfoView() => Column(children: [
+        InkWell(
+            onTap: () => setState(() =>
+                _isCitySituationInfoExpanded = !_isCitySituationInfoExpanded),
+            child: _buildAreaEpidemicStuationRowItemView(
+                widget.locAreaSituationInfo.provinceShortName,
+                widget.locAreaSituationInfo.confirmed,
+                widget.locAreaSituationInfo.suspected,
+                widget.locAreaSituationInfo.cured,
+                widget.locAreaSituationInfo.dead,
+                isProvince: true,
+                hasCities:
+                    widget.locAreaSituationInfo.cityInfoList?.isNotEmpty ==
+                        true)),
+        if (widget.locAreaSituationInfo?.cityInfoList?.isNotEmpty == true &&
+            !_isCitySituationInfoExpanded)
+          for (var itemInfo in widget.locAreaSituationInfo.cityInfoList)
+            _buildAreaEpidemicStuationRowItemView(
+                itemInfo.cityName,
+                itemInfo.confirmed,
+                itemInfo.suspected,
+                itemInfo.cured,
+                itemInfo.dead,
+                isProvince: false,
+                hasCities: false)
+      ]);
+
+  Widget _buildFooterView() => Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      child: Text('*  ${widget.statisticsInfo.generalRemark}',
+          style: TextStyle(fontSize: 10, color: Colors.grey[400])));
+
+  Widget _buildAreaEpidemicStuationRowItemView(
+          String cityName, int confirmed, int suspected, int cured, int dead,
+          {int confirmedIncr,
+          int suspectedIncr,
+          int curedIncr,
+          int deadIncr,
+          bool isProvince = true,
+          bool hasCities = true}) =>
+      Padding(
+          padding: EdgeInsets.all(8),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            _buildAreaNameColumnItemView(cityName,
+                textSize: isProvince ? 14 : 13,
+                textColor: isProvince ? Colors.black : Colors.grey[500],
+                hasCities: hasCities),
+            _buildColumnItemView(HumanStateType.Confirmed, 3, confirmed,
+                incrValue: confirmedIncr),
+            _buildColumnItemView(HumanStateType.Suspected, 3, suspected,
+                incrValue: suspectedIncr),
+            _buildColumnItemView(HumanStateType.Cured, 2, cured,
+                incrValue: curedIncr),
+            _buildColumnItemView(HumanStateType.Dead, 2, dead,
+                incrValue: deadIncr)
+          ]));
+
+  Widget _buildAreaNameColumnItemView(String name,
       {double textSize = 14, Color textColor, bool hasCities = false}) {
     var nameWidget = Text(name,
         textAlign: TextAlign.start,
@@ -96,72 +168,23 @@ class _EpidemicSituationStatisticsInfoViewState
     return Expanded(flex: 2, child: retWidget);
   }
 
-  Widget _buildEpidemicSituationStatisticsInfoView() => Padding(
-      padding: EdgeInsets.all(8),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        _buildAreaNameRowItemView('全国'),
-        _buildItemView(typeConfirmed, 3, widget.statisticsInfo.confirmedCount,
-            incrValue: widget.statisticsInfo.confirmedIncr),
-        _buildItemView(typeSuspected, 3, widget.statisticsInfo.suspectedCount,
-            incrValue: widget.statisticsInfo.suspectedIncr),
-        _buildItemView(typedCured, 2, widget.statisticsInfo.curedCount,
-            incrValue: widget.statisticsInfo.curedIncr),
-        _buildItemView(typeDead, 2, widget.statisticsInfo.deadCount,
-            incrValue: widget.statisticsInfo.deadIncr),
-      ]));
-
-  Widget _buildLocAreaEpidemicSituationInfoView() => Column(children: [
-        InkWell(
-            onTap: () => setState(() =>
-                _isCitySituationInfoExpanded = !_isCitySituationInfoExpanded),
-            child: Padding(
-                padding: EdgeInsets.all(8),
-                child: Row(children: [
-                  _buildAreaNameRowItemView(
-                      widget.locAreaSituationInfo?.provinceShortName ?? '',
-                      hasCities: widget
-                              .locAreaSituationInfo?.cityInfoList?.isNotEmpty ==
-                          true),
-                  _buildItemView(
-                      typeConfirmed, 3, widget.locAreaSituationInfo.confirmed),
-                  _buildItemView(
-                      typeSuspected, 3, widget.locAreaSituationInfo.suspected),
-                  _buildItemView(
-                      typedCured, 2, widget.locAreaSituationInfo.cured),
-                  _buildItemView(typeDead, 2, widget.locAreaSituationInfo.dead),
-                ]))),
-        if (widget.locAreaSituationInfo?.cityInfoList?.isNotEmpty == true &&
-            !_isCitySituationInfoExpanded)
-          for (var itemInfo in widget.locAreaSituationInfo.cityInfoList)
-            Padding(
-                padding: EdgeInsets.all(8),
-                child: Row(children: [
-                  _buildAreaNameRowItemView(itemInfo.cityName ?? '',
-                      textSize: 13, textColor: Colors.grey[500]),
-                  _buildItemView(typeConfirmed, 3, itemInfo.confirmed,
-                      isCityData: true),
-                  _buildItemView(typeSuspected, 3, itemInfo.suspected,
-                      isCityData: true),
-                  _buildItemView(typedCured, 2, itemInfo.cured,
-                      isCityData: true),
-                  _buildItemView(typeDead, 2, itemInfo.dead, isCityData: true),
-                ]))
-      ]);
-
-  Widget _buildItemView(int type, int flex, int value,
-          {int incrValue, bool isCityData}) =>
+  Widget _buildColumnItemView(HumanStateType type, int flex, int value,
+          {int incrValue}) =>
       Expanded(
           flex: flex,
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Text(type == typeSuspected && value == 0 ? '---' : value.toString(),
+            Text(
+                type == HumanStateType.Suspected && value == 0
+                    ? '---'
+                    : value.toString(),
                 style: TextStyle(
                     fontSize: 16,
-                    color: type == typeConfirmed
+                    color: type == HumanStateType.Confirmed
                         ? Colors.red[800]
-                        : (type == typeSuspected
+                        : (type == HumanStateType.Suspected
                             ? Colors.yellow[800]
-                            : (type == typedCured
+                            : (type == HumanStateType.Cured
                                 ? Colors.green[800]
                                 : Colors.black)))),
             if (incrValue != null)
@@ -169,7 +192,7 @@ class _EpidemicSituationStatisticsInfoViewState
                   margin: EdgeInsets.only(top: 3),
                   padding: EdgeInsets.symmetric(vertical: 3, horizontal: 5),
                   decoration: BoxDecoration(
-                      color: type == typeConfirmed
+                      color: type == HumanStateType.Confirmed
                           ? Colors.red[100]
                           : Colors.grey[100],
                       borderRadius: BorderRadius.all(Radius.circular(3))),
