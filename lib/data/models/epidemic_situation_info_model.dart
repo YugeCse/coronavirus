@@ -29,6 +29,12 @@ class EpidemicSituationInfoModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  AreaSituationInfo get locAreaSituationInfo => _locProvinceName == null
+      ? null
+      : areaSituationInfoList?.singleWhere(
+          (e) => _locProvinceName.contains(e.provinceShortName),
+          orElse: () => null);
+
   SituationStatisticsInfo get statisticsInfo => _data?.statisticsInfo;
 
   List<AreaSituationInfo> get areaSituationInfoList =>

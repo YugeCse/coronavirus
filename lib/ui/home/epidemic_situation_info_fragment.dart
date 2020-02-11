@@ -70,17 +70,9 @@ class _EpidemicSituationInfoFragmentState
                 children: [
                   EpidemicSituationStatisticsInfoView(
                       statisticsInfo: data.statisticsInfo,
-                      locAreaSituationInfo: data.areaSituationInfoList
-                          .singleWhere(
-                              (e) =>
-                                  data.locProvinceName
-                                      ?.contains(e.provinceShortName) ==
-                                  true,
-                              orElse: () => null)),
+                      locAreaSituationInfo: data.locAreaSituationInfo),
                   EpidemicSituationMapInfoView(
-                      mapInfo: _mapInfo,
-                      locProvinceName: data.locProvinceName,
-                      situationInfo: data.data),
+                      mapInfo: _mapInfo, situationInfo: data.data),
                   EpidemicSituationChartInfoView(
                       context: context, situationInfo: data.data),
                   EpidemicSituationForeignInfoView(

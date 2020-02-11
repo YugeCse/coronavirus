@@ -10,11 +10,13 @@ class EpidemicSituationMapInfoView extends StatefulWidget {
   EpidemicSituationMapInfoView({
     Key key,
     @required this.mapInfo,
-    @required this.locProvinceName,
     @required this.situationInfo,
   }) : super(key: key);
+
+  /// 地图信息
   final MapInfo mapInfo;
-  final String locProvinceName;
+
+  /// 病毒数据信息
   final CornonavirusSituationInfo situationInfo;
 
   @override

@@ -32,38 +32,28 @@ class _AreaSituationInfoPageState extends State<AreaSituationInfoPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildHangingContainerView(),
               Container(
-                  constraints: BoxConstraints(
-                      maxHeight: (MediaQuery.of(context).size.height -
-                              kToolbarHeight -
-                              kBottomNavigationBarHeight) *
-                          0.75),
-                  child: SingleChildScrollView(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.max,
-                          children: _buildContentView())))
+                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(5))),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildHangingContainerView(),
+                        _buildAreaEpidemicSituationCitiesInfoView(),
+                        Container(
+                            height: 8,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.vertical(
+                                    bottom: Radius.circular(5))))
+                      ]))
             ])
       ]));
 
-  List<Widget> _buildContentView() => [
-        Container(
-            alignment: Alignment.center,
-            color: Colors.white,
-            child: _buildAreaEpidemicSituationCitiesInfoView()),
-        Container(
-            height: 8,
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(bottom: Radius.circular(5))))
-      ];
-
   Widget _buildHangingContainerView() => Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(5))),
@@ -109,17 +99,25 @@ class _AreaSituationInfoPageState extends State<AreaSituationInfoPage> {
 
   Widget _buildAreaEpidemicSituationCitiesInfoView() =>
       widget.areaSituationInfo?.cityInfoList?.isNotEmpty == true
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: widget.areaSituationInfo.cityInfoList
-                  .map((itemInfo) => _buildAreaEpidemicStuationRowItemView(
-                      itemInfo.cityName,
-                      itemInfo.confirmed,
-                      itemInfo.suspected,
-                      itemInfo.cured,
-                      itemInfo.dead,
-                      isProvince: false))
-                  .toList())
+          ? Container(
+              constraints: BoxConstraints(
+                  maxHeight: (MediaQuery.of(context).size.height -
+                          kToolbarHeight -
+                          kBottomNavigationBarHeight) *
+                      0.75),
+              child: SingleChildScrollView(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: widget.areaSituationInfo.cityInfoList
+                          .map((itemInfo) =>
+                              _buildAreaEpidemicStuationRowItemView(
+                                  itemInfo.cityName,
+                                  itemInfo.confirmed,
+                                  itemInfo.suspected,
+                                  itemInfo.cured,
+                                  itemInfo.dead,
+                                  isProvince: false))
+                          .toList())))
           : Container();
 
   Widget _buildAreaEpidemicStuationRowItemView(

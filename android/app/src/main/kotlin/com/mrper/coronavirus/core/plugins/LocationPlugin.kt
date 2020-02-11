@@ -20,5 +20,6 @@ fun Context.getLocationInfo(scanSpanTime: Int = 0, onPubResult: (location: BDLoc
         coorType = "bd09ll"
         scanSpan = scanSpanTime
         openGps = true
+        setEnableSimulateGps(true)
     }
 }.start()

@@ -23,7 +23,7 @@ class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   final _tabItemSources = [
     {'text': '疫情信息', 'icon': 'assets/images/ic_virus.png'},
-    {'text': '实时讯息', 'icon': 'assets/images/ic_news.png'},
+    {'text': '实时讯息', 'icon': 'assets/images/ic_news.png'},          
     {'text': '常识知识', 'icon': 'assets/images/ic_knowledge.png'},
   ];
 
@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage>
   EpidemicSituationInfoModel _epidemicSituationInfo;
 
   /// 请求应用权限
-  Future<void> _requestAppPermission() async {
+  Future<Map<PermissionGroup, PermissionStatus>> _requestAppPermission() async {
     var locPerRet = await PermissionHandler()
         .checkPermissionStatus(PermissionGroup.location);
     var rwPerRet = await PermissionHandler()
@@ -41,25 +41,31 @@ class _HomePageState extends State<HomePage>
         rwPerRet != PermissionStatus.granted) {
       var result = await PermissionHandler().requestPermissions(
           [PermissionGroup.location, PermissionGroup.storage]);
-      if (result[PermissionGroup.location] != PermissionStatus.granted)
-        showToast('获取定位权限失败，某些功能可能会受到限制');
+      locPerRet = result[PermissionGroup.location];
     }
+    if (locPerRet != PermissionStatus.granted)
+      showToast('获取定位权限失败，某些功能可能会受到限制');
+    Map<PermissionGroup, PermissionStatus> result = Map();
+    result[PermissionGroup.location] = locPerRet;
+    result[PermissionGroup.storage] = rwPerRet;
+    return result;
   }
 
   /// 初始化
   void _initializer() async {
     _tabSelectedIndex = 0; //默认tab选中的索引为0
     _tabController = TabController(initialIndex: 0, length: 3, vsync: this);
-    await _requestAppPermission(); //请求应用权限
   }
 
-  void _initAndLoadDataProvider() {
+  void _initAndLoadDataProvider() async {
     var epidemicSiuationInfo =
         Provider.of<EpidemicSituationInfoModel>(context, listen: true);
     if (_epidemicSituationInfo != epidemicSiuationInfo) {
       _epidemicSituationInfo = epidemicSiuationInfo;
-      GeoLocation.getLocationInfo().then(
-          (value) => _epidemicSituationInfo.locProvinceName = value.province);
+      var result = await _requestAppPermission(); //请求应用权限
+      if (result[PermissionGroup.location] == PermissionStatus.granted)
+        _epidemicSituationInfo.locProvinceName =
+            (await GeoLocation.getLocationInfo()).province;
     }
   }
 
